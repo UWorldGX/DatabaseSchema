@@ -3,10 +3,20 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:hc="https://handyorg.github.io/handycontrol"
         xmlns:local="clr-namespace:FirewallDemo.View"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-
-    </Grid>
+        Title="MainWindow" Height="320" Width="250">
+    <hc:SimpleStackPanel>
+        <Button
+            Content="开始监听"
+            Margin="20"
+            Command="{Binding StartListeningCommand}"/>
+        <Separator/>
+        <TextBlock
+            Text="允许的端口"/>
+        <ListBox
+            Style="{StaticResource StackPanelVerticalListBox}"
+            ItemsSource="{Binding Firewall.AllowedPorts}"/>
+    </hc:SimpleStackPanel>
 </Window>
