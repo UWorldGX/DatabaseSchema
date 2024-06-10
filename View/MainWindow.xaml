@@ -9,14 +9,9 @@
         Title="MainWindow" Height="320" Width="250">
     <hc:SimpleStackPanel>
         <Button
-            Content="开始监听"
+            Content="测试1"
             Margin="20"
             Command="{Binding StartListeningCommand}"/>
-        <Separator/>
-        <TextBlock
-            Text="允许的端口"/>
-        <ListBox
-            Style="{StaticResource StackPanelVerticalListBox}"
-            ItemsSource="{Binding Firewall.AllowedPorts}"/>
+
     </hc:SimpleStackPanel>
 </Window>

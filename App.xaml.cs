@@ -1,5 +1,8 @@
-﻿using FirewallDemo.View;
+﻿using FirewallDemo.Model;
+using FirewallDemo.Model.Model;
+using FirewallDemo.View;
 using FirewallDemo.ViewModel;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -41,14 +44,15 @@ public partial class App : Application
 
         //services.AddOptions()
         //    .Configure<Model.MemoManager>(root.Bind);
-        //services.AddDbContextFactory<InnoContext>(option =>
-        //{
-        //    option.UseMySql(System.Configuration.ConfigurationManager.ConnectionStrings["connStr"].ConnectionString, new MySqlServerVersion(new Version(8, 0, 35)))
-        //    .EnableDetailedErrors();
-        //}, ServiceLifetime.Scoped);
+        services.AddDbContextFactory<xpertContext>(option =>
+        {
+            option.UseMySql(System.Configuration.ConfigurationManager.ConnectionStrings["connStr"].ConnectionString, new MySqlServerVersion(new Version(8, 0, 35)))
+            .EnableDetailedErrors();
+        }, ServiceLifetime.Scoped);
+        //主窗口
         services.AddSingleton<MainVM>();
-
         services.AddScoped<MainWindow>();
+        services.AddTransient<DataQueryerForCustomer>();
     }
 
     //3 重写OnStartUp函数

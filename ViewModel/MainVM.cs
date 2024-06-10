@@ -1,6 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FirewallDemo.Model;
+using HandyControl.Controls;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,14 +12,16 @@ using System.Threading.Tasks;
 
 namespace FirewallDemo.ViewModel;
 
-public partial class MainVM : ObservableObject
+public partial class MainVM(IServiceProvider provider) : ObservableObject
 {
-    [ObservableProperty]
-    private PacketFilterFirewall _firewall = new(IPAddress.Parse("127.0.0.1"), 8888);
+    private readonly IServiceProvider _provider = provider;
 
     [RelayCommand]
     private void StartListening()
     {
-        _firewall.Filter();
+        var queryer = _provider.GetRequiredService<DataQueryerForCustomer>();
+        var user = queryer.GetUser("user00000001");
+        if(user != null)
+            MessageBox.Success(user.Nickname);
     }
 }
