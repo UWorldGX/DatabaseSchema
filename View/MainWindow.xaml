@@ -6,12 +6,30 @@
         xmlns:hc="https://handyorg.github.io/handycontrol"
         xmlns:local="clr-namespace:FirewallDemo.View"
         mc:Ignorable="d"
-        Title="MainWindow" Height="320" Width="250">
-    <hc:SimpleStackPanel>
-        <Button
-            Content="测试1"
-            Margin="20"
-            Command="{Binding StartListeningCommand}"/>
 
-    </hc:SimpleStackPanel>
+        Title="MainWindow" Height="320" Width="250">
+    <Window.Background>
+        <LinearGradientBrush EndPoint="1,0">
+            <GradientStop Color="#fbc2eb"
+                          Offset="0.1" />
+            <GradientStop Color="#a6c1ee"
+                          Offset="1.0" />
+        </LinearGradientBrush>
+    </Window.Background>
+    <hc:TabControl TabStripPlacement="Left" Style="{DynamicResource TabControlInLine}">
+        <hc:TabItem Header="欢迎页">
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="25"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <!--欢迎信息-->
+                <TextBlock
+                    Style="{StaticResource TextBlockTitle}"
+                    Text="{Binding CurrentUserInfo.Nickname, StringFormat='欢迎回来,{0}!'}"/>
+            </Grid>
+        </hc:TabItem>
+    </hc:TabControl>
+
 </Window>

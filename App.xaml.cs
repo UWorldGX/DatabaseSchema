@@ -1,5 +1,7 @@
 ﻿using FirewallDemo.Model;
-using FirewallDemo.Model.Model;
+using FirewallDemo.Model.Data;
+using FirewallDemo.Model.UserManage;
+using FirewallDemo.Security;
 using FirewallDemo.View;
 using FirewallDemo.ViewModel;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +11,7 @@ using System;
 using System.Configuration;
 using System.Data;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Text;
 using System.Windows;
 
@@ -49,16 +52,26 @@ public partial class App : Application
             option.UseMySql(System.Configuration.ConfigurationManager.ConnectionStrings["connStr"].ConnectionString, new MySqlServerVersion(new Version(8, 0, 35)))
             .EnableDetailedErrors();
         }, ServiceLifetime.Scoped);
+        //程序内用户和当前用户管理器
+        services.AddScoped<UserCenter>();
         //主窗口
         services.AddSingleton<MainVM>();
         services.AddScoped<MainWindow>();
+        //登录窗口与登录组件
+        services.AddTransient<RegisterManager>();
+        services.AddTransient<LoginManager>();
+        services.AddScoped<LoginVM>();
+        services.AddScoped<LoginWindow>();
+        //为用户使用的查询类
         services.AddTransient<DataQueryerForCustomer>();
+        services.AddTransient<DataQueryerForAdmin>();
     }
 
     //3 重写OnStartUp函数
     protected override void OnStartup(StartupEventArgs e)
     {
-        var window = _serviceProvider.GetRequiredService<MainWindow>();
-        window.Show();
+        var window = _serviceProvider.GetRequiredService<LoginWindow>();
+        window.ShowDialog();
     }
+
 }

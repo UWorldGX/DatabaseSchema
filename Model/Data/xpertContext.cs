@@ -3,16 +3,11 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
 
-namespace FirewallDemo.Model.Model;
+namespace FirewallDemo.Model.Data;
 
 public partial class xpertContext : DbContext
 {
-    public xpertContext()
-    {
-    }
-
     public xpertContext(DbContextOptions<xpertContext> options)
         : base(options)
     {
@@ -28,8 +23,7 @@ public partial class xpertContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseMySql(System.Configuration.ConfigurationManager.ConnectionStrings["connStr"].ConnectionString, Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.32-mysql"));
+    public virtual DbSet<UserPrivkey> UserPrivkeys { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -114,7 +108,7 @@ public partial class xpertContext : DbContext
                 .HasColumnName("summary");
             entity.Property(e => e.Type)
                 .IsRequired()
-                .HasMaxLength(64)
+                .HasMaxLength(8)
                 .HasColumnName("type");
 
             entity.HasOne(d => d.Seller).WithMany(p => p.Items)
@@ -214,6 +208,7 @@ public partial class xpertContext : DbContext
                 .HasMaxLength(32)
                 .HasColumnName("id");
             entity.Property(e => e.Age).HasColumnName("age");
+            entity.Property(e => e.Money).HasColumnName("money");
             entity.Property(e => e.Name)
                 .IsRequired()
                 .HasMaxLength(32)
@@ -226,11 +221,34 @@ public partial class xpertContext : DbContext
                 .IsRequired()
                 .HasMaxLength(255)
                 .HasColumnName("password");
+            entity.Property(e => e.PublicKey)
+                .IsRequired()
+                .HasMaxLength(1024)
+                .HasColumnName("public_key");
+            entity.Property(e => e.Role)
+                .IsRequired()
+                .HasMaxLength(5)
+                .HasColumnName("role");
             entity.Property(e => e.Sex)
                 .IsRequired()
                 .HasMaxLength(3)
                 .IsFixedLength()
                 .HasColumnName("sex");
+        });
+
+        modelBuilder.Entity<UserPrivkey>(entity =>
+        {
+            entity.HasKey(e => e.UserId).HasName("PRIMARY");
+
+            entity.ToTable("user_privkey");
+
+            entity.Property(e => e.UserId)
+                .HasMaxLength(32)
+                .HasColumnName("user_id");
+            entity.Property(e => e.PrivateKey)
+                .IsRequired()
+                .HasMaxLength(1024)
+                .HasColumnName("private_key");
         });
 
         OnModelCreatingPartial(modelBuilder);

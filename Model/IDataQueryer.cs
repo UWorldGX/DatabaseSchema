@@ -1,4 +1,5 @@
-﻿using FirewallDemo.Model.Model;
+﻿
+using FirewallDemo.Model.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,12 +13,12 @@ namespace FirewallDemo.Model;
 /// </summary>
 public interface IDataQueryer
 {
-    public Item? GetItem(string itemId);
-    public Sale? GetSale(string saleId);
-    public IEnumerable<Sale>? GetSales(string customerId, string sellerId);
-    public User? GetUser(string userId);
-    public Message? GetMessage(string msgId);
-    public IEnumerable<Message>? GetMessages(ChatList chatList);
-    public ChatList? GetChat(string chatId);
-    public IEnumerable<ChatList>? GetChats(string customerId, string sellerId);
+    public Item? GetItem(string itemId, User caller);
+    public Sale? GetSale(string saleId, User caller);
+    public IEnumerable<Sale>? GetSales(string customerId, string sellerId, User caller);
+    public UserInfo? GetUser(string userId, User caller);
+    public Message? GetMessage(string msgId, User caller);
+    public IEnumerable<Message>? GetMessages(ChatList chatList, User caller);
+    public ChatList? GetChat(string chatId, User caller);
+    public IEnumerable<ChatList>? GetChats(string customerId, string sellerId, User caller);
 }

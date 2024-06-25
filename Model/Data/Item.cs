@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace FirewallDemo.Model.Model;
+namespace FirewallDemo.Model.Data;
 
 public partial class Item
 {

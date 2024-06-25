@@ -1,0 +1,70 @@
+﻿<Window x:Class="FirewallDemo.View.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FirewallDemo.View"
+        xmlns:hc="https://handyorg.github.io/handycontrol"
+        xmlns:ex="clr-namespace:FirewallDemo.View.Extended"
+        mc:Ignorable="d"
+        Title="登录" Height="350" Width="500">
+    <Window.Background>
+        <LinearGradientBrush EndPoint="1,0">
+            <GradientStop Color="#fbc2eb"
+                          Offset="0.1" />
+            <GradientStop Color="#a6c1ee"
+                          Offset="1.0" />
+        </LinearGradientBrush>
+    </Window.Background>
+    <!--主layout-->
+    <Grid
+        Margin="10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <!--用户名和密码输入-->
+        <hc:UniformSpacingPanel
+            Orientation="Vertical"
+            Spacing="5"
+            Margin="5"
+            VerticalAlignment="Center">
+            <TextBox
+                hc:InfoElement.TitlePlacement="Left"
+                hc:InfoElement.TitleWidth="80"
+                Text="{Binding UserName}"
+                Style="{StaticResource TextBoxExtend}"
+                hc:TitleElement.Title="用户名"/>
+            <PasswordBox
+                hc:InfoElement.TitlePlacement="Left"
+                hc:InfoElement.TitleWidth="80"
+                Style="{StaticResource PasswordBoxExtend}"
+                ex:PwdBoxExtended.Password="{Binding Password}"
+                hc:TitleElement.Title="密码">
+                <!--<hc:Interaction.Triggers>
+                <hc:EventTrigger EventName="PasswordChanged">
+                <hc:InvokeCommandAction Command="{Binding SetPasswordCommand}" CommandParameter=""/>
+                </hc:EventTrigger>
+                </hc:Interaction.Triggers>-->
+            </PasswordBox>
+        </hc:UniformSpacingPanel>
+        <hc:UniformSpacingPanel
+            Grid.Column="1"
+            Orientation="Vertical"
+            Spacing="5"
+            Margin="20"
+            VerticalAlignment="Center">
+            <Button
+                Style="{StaticResource ButtonPrimary}"
+                Command="{Binding LoginCommand}"
+                Content="登录"/>
+            <Button
+                Command="{Binding FillCustomerCommand}"
+                Content="调试:用户1登录"/>
+            <Button
+                Command="{Binding FillAdminCommand}"
+                Content="调试:用户3登录"/>
+        </hc:UniformSpacingPanel>
+    </Grid>
+
+</Window>

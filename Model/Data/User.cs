@@ -3,8 +3,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace FirewallDemo.Model.Model;
-
+namespace FirewallDemo.Model.Data;
 public partial class User
 {
     public string Id { get; set; }
@@ -18,6 +17,12 @@ public partial class User
     public string Sex { get; set; }
 
     public string Password { get; set; }
+
+    public string Role { get; set; }
+
+    public string PublicKey { get; set; }
+
+    public int Money { get; set; }
 
     public virtual ICollection<ChatList> ChatListCustomers { get; set; } = new List<ChatList>();
 

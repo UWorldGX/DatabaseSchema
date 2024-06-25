@@ -3,12 +3,12 @@
    "ContextClassName": "xpertContext",
    "ContextNamespace": null,
    "FilterSchemas": false,
-   "IncludeConnectionString": true,
+   "IncludeConnectionString": false,
    "ModelNamespace": null,
    "OutputContextPath": null,
-   "OutputPath": "Model",
+   "OutputPath": "Model2",
    "PreserveCasingWithRegex": true,
-   "ProjectRootNamespace": "FirewallDemo.Model",
+   "ProjectRootNamespace": "FirewallDemo.Model2",
    "Schemas": null,
    "SelectedHandlebarsLanguage": 2,
    "SelectedToBeGenerated": 0,
@@ -33,10 +33,15 @@
       {
          "Name": "user",
          "ObjectType": 0
+      },
+      {
+         "Name": "user_privkey",
+         "ObjectType": 0
       }
    ],
    "UiHint": null,
    "UncountableWords": null,
+   "UseAsyncStoredProcedureCalls": true,
    "UseBoolPropertiesWithoutDefaultSql": false,
    "UseDatabaseNames": false,
    "UseDateOnlyTimeOnly": true,
