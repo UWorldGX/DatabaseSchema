@@ -7,7 +7,7 @@
         xmlns:hc="https://handyorg.github.io/handycontrol"
         xmlns:ex="clr-namespace:FirewallDemo.View.Extended"
         mc:Ignorable="d"
-        Title="登录" Height="350" Width="500">
+        Title="登录" Height="350" Width="600">
     <Window.Background>
         <LinearGradientBrush EndPoint="1,0">
             <GradientStop Color="#fbc2eb"
@@ -20,24 +20,31 @@
     <Grid
         Margin="10">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
+            <ColumnDefinition Width="2*"/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
+        <Border Style="{StaticResource BorderRegion}" Effect="{StaticResource EffectShadow5}">
+            <TextBlock
+                Text="广告位招租"
+                Style="{StaticResource TextBlockTitleBold}"/>
+        </Border>
+
         <!--用户名和密码输入-->
         <hc:UniformSpacingPanel
             Orientation="Vertical"
             Spacing="5"
             Margin="5"
+            Grid.Column="1"
             VerticalAlignment="Center">
             <TextBox
                 hc:InfoElement.TitlePlacement="Left"
-                hc:InfoElement.TitleWidth="80"
+                hc:InfoElement.TitleWidth="50"
                 Text="{Binding UserName}"
                 Style="{StaticResource TextBoxExtend}"
                 hc:TitleElement.Title="用户名"/>
             <PasswordBox
                 hc:InfoElement.TitlePlacement="Left"
-                hc:InfoElement.TitleWidth="80"
+                hc:InfoElement.TitleWidth="50"
                 Style="{StaticResource PasswordBoxExtend}"
                 ex:PwdBoxExtended.Password="{Binding Password}"
                 hc:TitleElement.Title="密码">
@@ -47,13 +54,6 @@
                 </hc:EventTrigger>
                 </hc:Interaction.Triggers>-->
             </PasswordBox>
-        </hc:UniformSpacingPanel>
-        <hc:UniformSpacingPanel
-            Grid.Column="1"
-            Orientation="Vertical"
-            Spacing="5"
-            Margin="20"
-            VerticalAlignment="Center">
             <Button
                 Style="{StaticResource ButtonPrimary}"
                 Command="{Binding LoginCommand}"
@@ -62,9 +62,13 @@
                 Command="{Binding FillCustomerCommand}"
                 Content="调试:用户1登录"/>
             <Button
+                Command="{Binding FillCustomer2Command}"
+                Content="调试:用户2登录"/>
+            <Button
                 Command="{Binding FillAdminCommand}"
-                Content="调试:用户3登录"/>
+                Content="调试:管理员登录"/>
         </hc:UniformSpacingPanel>
+
     </Grid>
 
 </Window>

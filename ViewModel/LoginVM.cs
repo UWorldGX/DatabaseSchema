@@ -4,6 +4,7 @@ using FirewallDemo.Model.UserManage;
 using FirewallDemo.View;
 using HandyControl.Controls;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,14 +13,15 @@ using System.Threading.Tasks;
 
 namespace FirewallDemo.ViewModel
 {
-    public partial class LoginVM(IServiceProvider provider) : ObservableObject
+    public partial class LoginVM(IServiceProvider provider, ILogger<LoginVM> logger) : ObservableObject
     {
+        private readonly ILogger<LoginVM> _logger = logger;
         private readonly IServiceProvider _provider = provider;
 
         [ObservableProperty]
-        private string userName;
+        private string userName = string.Empty;
         [ObservableProperty]
-        private string password;
+        private string password = string.Empty;
 
 
         [RelayCommand]
@@ -32,10 +34,12 @@ namespace FirewallDemo.ViewModel
                 var currentUser = loginMgr.Login(UserName, Password);
                 if(currentUser == null)
                 {
+                    _logger.LogError("用户登录失败");
                     return;
                 }
                 var mainWindow = _provider.GetRequiredService<MainWindow>();
                 mainWindow.Show();
+                _logger.LogInformation($"用户登录成功.用户名:{UserName}");
                 var loginWindow = _provider.GetRequiredService<LoginWindow>();
                 loginWindow.Close();
             }
@@ -51,6 +55,13 @@ namespace FirewallDemo.ViewModel
         {
             UserName = "Mok Ting Fung";
             Password = "Ds5e7zJAxf";
+        }
+
+        [RelayCommand]
+        private void FillCustomer2()
+        {
+            UserName = "Yang Lu";
+            Password = "lYTb1W18nN";
         }
 
         [RelayCommand]

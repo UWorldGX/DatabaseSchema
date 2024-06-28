@@ -16,4 +16,6 @@ public partial class Message
     public string Content { get; set; }
 
     public virtual ChatList Chat { get; set; }
+
+    public sbyte Unread { get; set; }
 }

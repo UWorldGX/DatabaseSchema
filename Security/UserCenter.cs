@@ -60,6 +60,7 @@ public class UserCenter
             return false;
         if (user == null)
             return false;
+
         CurrentUser = new User();
         Utilities.Copy(user, CurrentUser);
         return true;

@@ -27,3 +27,13 @@ public partial class Sale
 
     public virtual User Seller { get; set; }
 }
+
+public enum SaleStatus
+{
+    WaitingforSeller,
+    Success,
+    ClosedByCustomer,
+    ClosedBySeller,
+    ClosedByOperator,
+    Warned
+}

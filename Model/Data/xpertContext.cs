@@ -76,6 +76,7 @@ public partial class xpertContext : DbContext
 
             entity.Property(e => e.ItemId)
                 .HasMaxLength(32)
+                .IsConcurrencyToken()
                 .HasColumnName("item_id");
             entity.Property(e => e.DelistingTimestamp)
                 .HasColumnType("datetime")
@@ -86,7 +87,7 @@ public partial class xpertContext : DbContext
                 .HasColumnName("item_name");
             entity.Property(e => e.ItemStatus)
                 .IsRequired()
-                .HasMaxLength(8)
+                .HasMaxLength(16)
                 .HasColumnName("item_status");
             entity.Property(e => e.ListingTimestamp)
                 .HasColumnType("datetime")
@@ -125,7 +126,7 @@ public partial class xpertContext : DbContext
             entity.HasIndex(e => e.ChatId, "F_msg_to_chat_id");
 
             entity.Property(e => e.MsgId)
-                .HasMaxLength(32)
+                .HasMaxLength(64)
                 .HasColumnName("msg_id");
             entity.Property(e => e.ChatId)
                 .IsRequired()
@@ -138,6 +139,8 @@ public partial class xpertContext : DbContext
             entity.Property(e => e.Timestamp)
                 .HasColumnType("datetime")
                 .HasColumnName("timestamp");
+            entity.Property(e => e.Unread)
+                .HasColumnName("unread");
 
             entity.HasOne(d => d.Chat).WithMany(p => p.Messages)
                 .HasForeignKey(d => d.ChatId)
@@ -158,7 +161,8 @@ public partial class xpertContext : DbContext
 
             entity.Property(e => e.SaleId)
                 .HasMaxLength(128)
-                .HasColumnName("sale_id");
+                .HasColumnName("sale_id")
+                .IsConcurrencyToken();
             entity.Property(e => e.CustomerId)
                 .IsRequired()
                 .HasMaxLength(32)

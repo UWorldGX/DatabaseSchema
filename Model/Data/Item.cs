@@ -31,3 +31,11 @@ public partial class Item
 
     public virtual User Seller { get; set; }
 }
+
+public enum ItemStatus
+{
+    ONSALE,
+    SOLD,
+    DELISTED,
+    WARNED
+}

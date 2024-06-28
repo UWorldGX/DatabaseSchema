@@ -1,0 +1,81 @@
+﻿<Window x:Class="FirewallDemo.View.AddItemTobeSoldWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:hc="https://handyorg.github.io/handycontrol"
+        xmlns:local="clr-namespace:FirewallDemo.View"
+        mc:Ignorable="d"
+        Title="要售出什么?" Height="650" Width="400">
+    <Grid
+        Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="30"/>
+        </Grid.RowDefinitions>
+        <hc:UniformSpacingPanel
+            Orientation="Vertical"
+            Spacing="5">
+            <TextBox
+                hc:InfoElement.TitlePlacement="Left"
+                hc:InfoElement.TitleWidth="50"
+                hc:InfoElement.ShowClearButton="True"
+                Text="{Binding ItemName}"
+                Style="{StaticResource TextBoxExtend}"
+                hc:TitleElement.Title="商品名"
+                ToolTip="若不填，则默认以商品介绍最前一句作为品名"/>
+            <TextBox
+                hc:InfoElement.TitlePlacement="Left"
+                hc:InfoElement.TitleWidth="50"
+                hc:InfoElement.Necessary="True"
+                Text="{Binding Type}"
+                Style="{StaticResource TextBoxExtend}"
+                hc:TitleElement.Title="类别"/>
+            <hc:SimpleStackPanel
+                Orientation="Horizontal">
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    Text="商品图片"/>
+                <hc:ImageSelector
+                    Width="100" Height="100"
+                    hc:BorderElement.CornerRadius="50"
+                    >
+                    <hc:Interaction.Triggers>
+                        <hc:EventTrigger EventName="ImageSelected">
+                            <hc:InvokeCommandAction Command="{Binding SetPictureCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode = FindAncestor, AncestorType=hc:ImageSelector}}"/>
+                        </hc:EventTrigger>
+                    </hc:Interaction.Triggers>
+                </hc:ImageSelector>
+            </hc:SimpleStackPanel>
+
+            <hc:NumericUpDown
+                hc:InfoElement.TitlePlacement="Left"
+                hc:InfoElement.TitleWidth="50"
+                hc:TitleElement.Title="售价"
+                Increment="1"
+                Style="{StaticResource NumericUpDownExtend}"
+                Value="{Binding SellPrice}"/>
+            <TextBox
+                hc:InfoElement.TitlePlacement="Left"
+                hc:InfoElement.TitleWidth="50"
+                Width="320"
+                Height="120"
+                hc:InfoElement.Necessary="True"
+                Text="{Binding Summary}"
+                Style="{StaticResource TextBoxExtend}"
+                hc:TitleElement.Title="介绍"
+                TextWrapping="Wrap" MaxLength="32766"
+                VerticalScrollBarVisibility="Visible"/>
+
+
+        </hc:UniformSpacingPanel>
+        <Button
+            Grid.Row="1"
+            Content="OK"
+            Style="{StaticResource ButtonPrimary}"
+            Command="{Binding ItemCompleteCommand}"
+            CommandParameter="{Binding RelativeSource={RelativeSource Mode = FindAncestor, AncestorType=Window}}">
+
+        </Button>
+    </Grid>
+</Window>

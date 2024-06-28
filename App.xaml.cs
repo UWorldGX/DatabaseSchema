@@ -4,9 +4,11 @@ using FirewallDemo.Model.UserManage;
 using FirewallDemo.Security;
 using FirewallDemo.View;
 using FirewallDemo.ViewModel;
+using FirewallDemo.ViewModel.EntityVM;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using NLog.Extensions.Logging;
 using System;
 using System.Configuration;
 using System.Data;
@@ -39,14 +41,6 @@ public partial class App : Application
     {
         var builder = new ConfigurationBuilder();
         services.AddSingleton<HttpClient>();
-        //using HttpClient httpClient = new();
-        //HttpRequestMessage request = new(HttpMethod.Get, "http://150.158.40.245");
-        //builder.AddJsonStream(httpClient.Send(request).Content.ReadAsStream());
-        //builder.AddJsonFile("config.json", optional: false, reloadOnChange: true);
-        //root = builder.Build();
-
-        //services.AddOptions()
-        //    .Configure<Model.MemoManager>(root.Bind);
         services.AddDbContextFactory<xpertContext>(option =>
         {
             option.UseMySql(System.Configuration.ConfigurationManager.ConnectionStrings["connStr"].ConnectionString, new MySqlServerVersion(new Version(8, 0, 35)))
@@ -62,9 +56,15 @@ public partial class App : Application
         services.AddTransient<LoginManager>();
         services.AddScoped<LoginVM>();
         services.AddScoped<LoginWindow>();
+
         //为用户使用的查询类
         services.AddTransient<DataQueryerForCustomer>();
+        //为管理员使用的查询类
         services.AddTransient<DataQueryerForAdmin>();
+        services.AddLogging(logBuilder =>
+        {
+            logBuilder.AddNLog();
+        });
     }
 
     //3 重写OnStartUp函数
