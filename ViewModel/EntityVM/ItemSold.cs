@@ -59,6 +59,7 @@ public partial class ItemSold(IServiceProvider provider) : ObservableObject
         {
             UserCenter userCenter = _provider.GetRequiredService<UserCenter>();
             var queryer = _provider.GetRequiredService<DataQueryerForCustomer>();
+            var pki = _provider.GetRequiredService<PKI>();
 
             //新建一条销售记录，设置各项信息
             Sale sale = new()
@@ -77,9 +78,14 @@ public partial class ItemSold(IServiceProvider provider) : ObservableObject
                 CustomerId = userCenter.CurrentUser.Id,
                 ChatId = "SL-" + Guid.NewGuid().ToString()[..12]
             };
-            Message msg = queryer.CreateSignedMessage("我要买下您的宝贝，等待您的回复.", chatList.ChatId, userCenter.CurrentUser);
-
-
+            Message msg = new()
+            {
+                Content = "我要买下您的宝贝，等待您的回复.",
+                Unread = 0,
+                ChatId = chatList.ChatId,
+                Timestamp = sale.Timestamp,
+                MsgId = "MSG-" + Guid.NewGuid().ToString()[..12]
+            }; 
 
             //修改原有item状态: 售出下架
             Item item = new();

@@ -147,33 +147,7 @@ public class DataQueryerForCustomer(IServiceProvider provider) : IDataQueryer, I
         return true;
     }
 
-    public Message CreateSignedMessage(string msgContent, string chatId, User caller)
-    {
-        var permission = CheckPermission(caller);
-        if (permission >= Permissions.Viewer)
-        {
-            throw new InvalidOperationException("不允许使用仅查看用户进行发消息操作.");
-        }
 
-        var rsa = RSA.Create();
-        rsa.ImportRSAPublicKey(Convert.FromBase64String(caller.PublicKey), out int a);
-        rsa.ImportRSAPrivateKey(GetUserPrivateKey(caller), out int b);
-        UTF8Encoding encoder = new();
-        var chars = msgContent.ToCharArray();
-        var byteCount = encoder.GetByteCount(chars);
-        var bytes = new Byte[byteCount];
-        int bytesEncodedCount = encoder.GetBytes(chars, 8, 8, bytes, 0);
-        Message result = new()
-        {
-            MsgId = "MSG" + Guid.NewGuid().ToString()[..8],
-            ChatId = chatId,
-            Timestamp = DateTime.Now,
-            Content = Convert.ToBase64String(rsa.Encrypt(bytes, RSAEncryptionPadding.Pkcs1))
-        };
-        return result;
-
-
-    }
     public Message? GetMessage(string msgId, User caller)
     {
         throw new NotImplementedException();
@@ -182,31 +156,6 @@ public class DataQueryerForCustomer(IServiceProvider provider) : IDataQueryer, I
     public IEnumerable<Message>? GetMessages(ChatList chatList, User caller)
     {
         throw new NotImplementedException();
-    }
-
-
-    public byte[] GetUserPrivateKey(User caller)
-    {
-        var permission = CheckPermission(caller);
-        if (permission >= Permissions.Viewer)
-        {
-            throw new InvalidOperationException("不允许使用仅查看用户进行该操作.");
-        }
-        using var serviceScope = _provider.CreateScope();
-        using var dataContext = serviceScope.ServiceProvider.GetRequiredService<xpertContext>();
-        try
-        {
-            var key = dataContext.UserPrivkeys.AsParallel()
-                .Where(k => k.UserId == caller.Id)
-                .Select(k => k).Single();
-            return Convert.FromBase64String(key.PrivateKey);
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Error(ex.Message);
-            return [];
-        }
-
     }
 
     public bool AddSale(Sale sale, User caller)

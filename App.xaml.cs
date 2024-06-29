@@ -48,6 +48,8 @@ public partial class App : Application
         }, ServiceLifetime.Scoped);
         //程序内用户和当前用户管理器
         services.AddScoped<UserCenter>();
+        //公钥基础设施
+        services.AddTransient<PKI>();
         //主窗口
         services.AddSingleton<MainVM>();
         services.AddScoped<MainWindow>();

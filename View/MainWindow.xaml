@@ -179,6 +179,7 @@
                                 </Border>
                             </DataTemplate>
                         </hc:CoverView.ItemHeaderTemplate>
+                        <!--商品单项展开后的预览-->
                         <hc:CoverView.ItemTemplate>
                             <DataTemplate>
                                 <Border Margin="5">
@@ -223,16 +224,59 @@
                 </hc:ScrollViewer>
             </hc:TransitioningContentControl>
         </hc:TabItem>
+        <!--消息-->
         <hc:TabItem Foreground="Coral" Background="Transparent">
             <hc:TabItem.Header>
-                <hc:Badge
-                    BadgeMargin="0,-14,-20,0"
-                    Style="{DynamicResource newMsgStyle}"
-                    Value="{Binding UnreadMessages.Count}">
-                    消息
-                </hc:Badge>
-            </hc:TabItem.Header>
+                <StackPanel
+                    Orientation="Horizontal">
+                    <TextBlock
+                        Text="消息"/>
+                    <hc:Badge
+                        BadgeMargin="0,-14,-20,0"
+                        Style="{DynamicResource newMsgStyle}"
+                        Value="{Binding UnreadMessages.Count}">
 
+                    </hc:Badge>
+                </StackPanel>
+
+            </hc:TabItem.Header>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="2*"/>
+                </Grid.ColumnDefinitions>
+                <!--通信用户列表-->
+                <ListBox
+                    BorderThickness="1"
+                    SelectionMode="Single"
+                    ItemsSource="{Binding Chats}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <hc:SimpleStackPanel
+                                Orientation="Horizontal">
+                                <!--<hc:Gravatar
+                                Id="{Binding TargetUser}"/>-->
+                                <TextBlock
+                                    Style="{StaticResource TextBlockDefaultBold}"
+                                    Text="{Binding TargetUser.Nickname}"/>
+                            </hc:SimpleStackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                    <hc:Interaction.Triggers>
+                        <hc:EventTrigger EventName="SelectionChanged">
+                            <hc:InvokeCommandAction Command="{Binding LoadMsgOfChatsCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode = FindAncestor, AncestorType=ListBox}}"/>
+                        </hc:EventTrigger>
+                    </hc:Interaction.Triggers>
+                </ListBox>
+                <ListBox
+                    Grid.Column="1">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
         </hc:TabItem>
         <hc:TabItem Foreground="Coral" Header="我" Background="Transparent">
 

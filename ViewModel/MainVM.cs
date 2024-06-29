@@ -15,6 +15,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace FirewallDemo.ViewModel;
@@ -27,11 +28,14 @@ public partial class MainVM : ObservableObject
     {
         _provider = provider;
         CurrentUserInfo = userCenter.GetCurrentUserInfo();
-        RefreshUserInfoAsync();
+        RefreshUserInfo();
     }
 
     [ObservableProperty]
     private UserInfo currentUserInfo;
+
+    [ObservableProperty]
+    private byte unreads;
 
     [ObservableProperty]
     private ObservableCollection<ItemTobeSold> itemsCollection = [];
@@ -40,10 +44,10 @@ public partial class MainVM : ObservableObject
     private ObservableCollection<ItemSold> salesCollection = [];
 
     [ObservableProperty]
-    private ObservableCollection<MsgVM> unreadMessages = [];
+    private ObservableCollection<MsgVM> currentMessages = [];
 
     [ObservableProperty]
-    private ObservableCollection<ChatList> chats = [];
+    private ObservableCollection<ChatListVM> chats = [];
 
     [RelayCommand]
     private void StartListening()
@@ -57,49 +61,31 @@ public partial class MainVM : ObservableObject
     /// <summary>
     /// 每隔一秒，该方法会线程独立地自动刷新用户信息
     /// </summary>
-    private async void RefreshUserInfoAsync()
+    public void RefreshUserInfo()
     {
-        await Task.Run(() =>
+        if (CurrentUserInfo != null)
         {
-            while (true)
-            {
-                if (CurrentUserInfo != null)
-                {
-                    UserCenter userCenter = _provider.GetRequiredService<UserCenter>();
-                    CurrentUserInfo = userCenter.GetCurrentUserInfo();
+            UserCenter userCenter = _provider.GetRequiredService<UserCenter>();
+            CurrentUserInfo = userCenter.GetCurrentUserInfo();
 
-                    using var serviceScope = _provider.CreateScope();
-                    var _queryer = serviceScope.ServiceProvider.GetRequiredService<DataQueryerForCustomer>();
-                    var msgs = _queryer.GetChats(userCenter.CurrentUser);
-                    if(msgs != null)
-                    {
-                        foreach(var c in msgs)
-                        {
-                            Chats.Add(c);
-                            foreach(var ms in c.Messages)
-                            {
-                                if ((ms.Timestamp - DateTime.Now).Seconds <= 3)
-                                {
-                                    var msgVm = new MsgVM(_provider);
-                                    Utilities.Copy(ms, msgVm);
-                                    UnreadMessages.Add(msgVm);
-                                }
-                                    
-                            }
-                        }
-                    }
-
-                }
-                Thread.Sleep(3000);
-            }
-        });
+        }
+        //Task.Run(() =>
+        //{
+        //    while (true)
+        //    {
+                
+        //        Thread.Sleep(3000);
+        //    }
+        //});
     }
 
     [RelayCommand]
     private void LoadSpecificPage(object sender)
     {
-        if (sender is TabControl tabControl)
+        if (sender is HandyControl.Controls.TabControl tabControl)
         {
+            
+
             switch (tabControl.SelectedIndex)
             {
                 case 0:
@@ -111,10 +97,11 @@ public partial class MainVM : ObservableObject
                     {
                         try
                         {
+                            UserCenter userCenter2 = _provider.GetRequiredService<UserCenter>();
+
                             ItemsCollection.Clear();
-                            UserCenter userCenter = _provider.GetRequiredService<UserCenter>();
                             var queryer = _provider.GetRequiredService<DataQueryerForCustomer>();
-                            var items = queryer.GetItems(userCenter.CurrentUser);
+                            var items = queryer.GetItems(userCenter2.CurrentUser);
                             if (items != null)
                                 foreach (var i in items)
                                 {
@@ -135,18 +122,18 @@ public partial class MainVM : ObservableObject
                         try
                         {
                             SalesCollection.Clear();
-                            UserCenter userCenter = _provider.GetRequiredService<UserCenter>();
+                            UserCenter userCenter1 = _provider.GetRequiredService<UserCenter>();
                             var queryer = _provider.GetRequiredService<DataQueryerForCustomer>();
-                            var items = queryer.GetAllItems(userCenter.CurrentUser);
+                            var items = queryer.GetAllItems(userCenter1.CurrentUser);
                             if (items != null)
                                 foreach (var i in items)
                                 {
                                     //自己出售的商品、状态不正常的商品不会出现在检索中
-                                    if(i.SellerId != userCenter.CurrentUser.Id && i.ItemStatus == "ONSALE")
+                                    if(i.SellerId != userCenter1.CurrentUser.Id && i.ItemStatus == "ONSALE")
                                     {
                                         var it = new ItemSold(_provider);
                                         Utilities.Copy(i, it);
-                                        it.SellerNickname = queryer.GetUser(it.SellerId, userCenter.CurrentUser)!.Nickname;
+                                        it.SellerNickname = queryer.GetUser(it.SellerId, userCenter1.CurrentUser)!.Nickname;
                                         SalesCollection.Add(it);
                                     }
 
@@ -159,9 +146,45 @@ public partial class MainVM : ObservableObject
                             return;
                         }
                     }
+                case 3:
+                    var _queryer = _provider.GetRequiredService<DataQueryerForCustomer>();
+                    UserCenter userCenter = _provider.GetRequiredService<UserCenter>();
+                    var msgs = _queryer.GetChats(userCenter.CurrentUser);
+                    if (msgs != null)
+                    {
+                        Chats.Clear();
+                        Unreads = 0;
+                        foreach (var c in msgs)
+                        {
+                            var cvm = ChatListVM.Create(c, _provider, userCenter.CurrentUser);
+                            Chats.Add(cvm);
+                            foreach (var ms in c.Messages)
+                            {
+                                if (ms.Unread == 0)
+                                {
+                                    Unreads++;
+                                }
+
+                            }
+                            //if (c.SellerId == CurrentUserInfo.Id)
+                            //{
+
+                            //}
+                            //else
+                            //{
+
+                            //}
+                        }
+                        //if(unreadCount > 0 )
+                        //{
+                        //    Growl.Info($"您有{unreadCount}条未读消息.");
+                        //}
+                    }
+                    break;
                 default:
                     break;
             }
+            RefreshUserInfo();
         }
     }
 
@@ -210,5 +233,21 @@ public partial class MainVM : ObservableObject
         //        queryer.AddItem(item, userCenter.CurrentUser);
         //    }
         //}
+    }
+
+    [RelayCommand]
+    private void LoadMsgOfChats(object sender)
+    {
+        if(sender is ListBox listbox)
+        {
+            CurrentMessages.Clear();
+            var currentChat = Chats[listbox.SelectedIndex];
+            foreach(var m in currentChat.Messages)
+            {
+                var msgVm = new MsgVM(_provider);
+                Utilities.Copy(m, msgVm);
+                CurrentMessages.Add(msgVm);
+            }
+        }
     }
 }
