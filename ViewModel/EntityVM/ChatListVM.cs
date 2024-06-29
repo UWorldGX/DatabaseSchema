@@ -25,7 +25,7 @@ public partial class ChatListVM(IServiceProvider provider) : ObservableObject
     [ObservableProperty]
     private string sellerId;
     [ObservableProperty]
-    private ObservableCollection<Message> messages = [];
+    private ObservableCollection<MsgVM> messages = [];
 
     [ObservableProperty]
     private UserInfo targetUser;
@@ -34,6 +34,20 @@ public partial class ChatListVM(IServiceProvider provider) : ObservableObject
     {
         ChatListVM vm = new(serviceProvider);
         Utilities.Copy(chatList, vm);
+        foreach(var m in chatList.Messages)
+        {
+            var ms = new MsgVM(serviceProvider);
+            Utilities.Copy(m, ms);
+            if (ms.SenderId == caller.Id)
+                ms.Role = "Sender";
+            else
+                ms.Role = "Receiver";
+            vm.Messages.Add(ms); 
+        }
+        var sorted = vm.Messages.OrderBy(m => m.Timestamp).Select(m => m).ToArray();
+        vm.Messages.Clear();
+        foreach (var m in sorted)
+            vm.Messages.Add(m);
 
         //获取目标用户
         var queryer = serviceProvider.GetRequiredService<DataQueryerForCustomer>();

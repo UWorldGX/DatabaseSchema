@@ -27,7 +27,8 @@
         </Style>
     </Window.Resources>
     <hc:TabControl TabStripPlacement="Left" Style="{DynamicResource TabControlInLine}"
-                   Background="Transparent">
+                   Background="Transparent"
+                   >
         <hc:Interaction.Triggers>
             <hc:EventTrigger EventName="SelectionChanged">
                 <hc:InvokeCommandAction Command="{Binding LoadSpecificPageCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode = FindAncestor, AncestorType=hc:TabControl}}"/>
@@ -233,8 +234,8 @@
                         Text="消息"/>
                     <hc:Badge
                         BadgeMargin="0,-14,-20,0"
-                        Style="{DynamicResource newMsgStyle}"
-                        Value="{Binding UnreadMessages.Count}">
+                        Style="{DynamicResource BadgeDanger}"
+                        Value="{Binding Unreads}">
 
                     </hc:Badge>
                 </StackPanel>
@@ -249,17 +250,21 @@
                 <ListBox
                     BorderThickness="1"
                     SelectionMode="Single"
+                    Style="{StaticResource ListBoxCustom}"
                     ItemsSource="{Binding Chats}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <hc:SimpleStackPanel
-                                Orientation="Horizontal">
+                            <Border
+                                Width="150"
+                                BorderBrush="Black"
+                                Background="{StaticResource RegionBrush}"
+                                Height="50">
                                 <!--<hc:Gravatar
                                 Id="{Binding TargetUser}"/>-->
                                 <TextBlock
                                     Style="{StaticResource TextBlockDefaultBold}"
                                     Text="{Binding TargetUser.Nickname}"/>
-                            </hc:SimpleStackPanel>
+                            </Border>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                     <hc:Interaction.Triggers>
@@ -268,18 +273,99 @@
                         </hc:EventTrigger>
                     </hc:Interaction.Triggers>
                 </ListBox>
-                <ListBox
+                <Grid
                     Grid.Column="1">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition Height="40"/>
+                    </Grid.RowDefinitions>
+                    <ListBox
+                        ItemsSource="{Binding CurrentMessages}"
+                        Style="{StaticResource WrapPanelVerticalListBox}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <hc:ChatBubble
+                                    Content="{Binding Content}"
+                                    Type="String"
+                                    Role="{Binding Role}"
+                                    IsRead="{Binding Unread}"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <hc:ElementGroup Orientation="Horizontal" Layout="Stack" Grid.Row="1"
+                                     HorizontalAlignment="Center"
+                                     VerticalAlignment="Center">
+                        <TextBox
+                            Text="{Binding MsgContent}"
+                            Width="250"
+                            Style="{StaticResource TextBoxExtend}"/>
+                        <Button
+                            Content="发送"
+                            Command="{Binding ChatCommand}"
+                            Style="{StaticResource ButtonSuccess}"/>
+                    </hc:ElementGroup>
+                </Grid>
 
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
             </Grid>
         </hc:TabItem>
         <hc:TabItem Foreground="Coral" Header="我" Background="Transparent">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="35"/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <hc:SimpleStackPanel>
+                    <TextBlock
+                        Style="{StaticResource TextBlockTitle}"
+                        Text="{Binding CurrentUserInfo.Nickname}"/>
+                    <Separator/>
+                </hc:SimpleStackPanel>
 
+                <hc:SimpleStackPanel
+                    Orientation="Horizontal"
+                    Grid.Row="1"
+                    Margin="10">
+                    <TextBlock
+                        Text="我的订单"
+                        Margin="5"
+                        Style="{StaticResource TextBlockDefaultBold}"
+                        TextAlignment="Left"
+                        HorizontalAlignment="Left"/>
+                    <hc:ButtonGroup>
+                        <Button
+                            Content="全部订单"
+                            Command="{Binding SearchAllSalesCommand}"/>
+                        <Button
+                            Content="待处理订单"
+                            Command="{Binding SearchCurrentSalesCommand}"/>
+                    </hc:ButtonGroup>
+
+                </hc:SimpleStackPanel>
+                <hc:SimpleStackPanel
+                    Orientation="Horizontal"
+                    Grid.Row="2"
+                    Margin="10">
+                    <TextBlock
+                        Text="账户操作"
+                        Margin="5"
+                        Style="{StaticResource TextBlockDefaultBold}"
+                        TextAlignment="Left"
+                        HorizontalAlignment="Left"/>
+                    <hc:ButtonGroup>
+                        <Button
+                            Content="修改账户信息"
+                            Command="{Binding ModifyUserInfoCommand}"/>
+                        <Button
+                            Content="修改密码"
+                            IsEnabled="False"
+                            Command="{Binding ModifyPwdCommand}"/>
+                    </hc:ButtonGroup>
+
+                </hc:SimpleStackPanel>
+
+
+            </Grid>
         </hc:TabItem>
         <hc:TabItem Foreground="Coral" Header="管理员看板" Background="Transparent">
 

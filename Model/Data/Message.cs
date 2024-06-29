@@ -11,11 +11,15 @@ public partial class Message
 
     public string ChatId { get; set; }
 
+    public string SenderId { get; set; }
+
     public DateTime Timestamp { get; set; }
 
     public string Content { get; set; }
 
+    public sbyte Unread { get; set; }
+
     public virtual ChatList Chat { get; set; }
 
-    public sbyte Unread { get; set; }
+    public virtual User Sender { get; set; }
 }

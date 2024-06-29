@@ -1,6 +1,7 @@
 ﻿using FirewallDemo.Model.Data;
 using FirewallDemo.Security;
 using FirewallDemo.Utility;
+using FirewallDemo.ViewModel.EntityVM;
 using HandyControl.Controls;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -141,7 +142,6 @@ public class DataQueryerForCustomer(IServiceProvider provider) : IDataQueryer, I
             //对于创建的场景，外键列ItemId无变化，不需要修改从表sale
             dataContext.Messages.Add(msg);
             dataContext.SaveChanges();
-            Growl.Success("上架商品成功!");
         }
 
         return true;
@@ -192,9 +192,10 @@ public class DataQueryerForCustomer(IServiceProvider provider) : IDataQueryer, I
         using var dataContext = serviceScope.ServiceProvider.GetRequiredService<xpertContext>();
         try
         {
-            var result = (from u in dataContext.Sales.AsParallel()
-                        where u.SaleId == saleId
-                        select u).SingleOrDefault() ?? throw new ArgumentNullException(nameof(saleId), "不存在符合条件的销售记录");
+            var result = dataContext.Sales
+                .Where(u => u.SaleId == saleId)
+                .Include(u => u.Item)
+                .Select(u => u).SingleOrDefault() ?? throw new ArgumentNullException(nameof(saleId), "不存在符合条件的销售记录");
             return result;
         }
         catch (Exception ex)
@@ -210,10 +211,10 @@ public class DataQueryerForCustomer(IServiceProvider provider) : IDataQueryer, I
         using var dataContext = serviceScope.ServiceProvider.GetRequiredService<xpertContext>();
         try
         {
-            var result = (from u in dataContext.Sales.AsParallel()
-                          where u.CustomerId == customerId
-                          && u.SellerId == sellerId
-                          select u).ToArray() ?? throw new ArgumentNullException(nameof(customerId), "不存在符合条件的销售记录");
+            var result = dataContext.Sales
+                .Where(u => u.CustomerId == customerId && u.SellerId == sellerId)
+                .Include(u => u.Item)
+                .Select(u => u).ToArray() ?? throw new ArgumentNullException(nameof(customerId), "不存在符合条件的销售记录");
             return result;
         }
         catch (Exception ex)

@@ -30,6 +30,8 @@ public partial class User
 
     public virtual ICollection<Item> Items { get; set; } = new List<Item>();
 
+    public virtual ICollection<Message> Messages { get; set; } = new List<Message>();
+
     public virtual ICollection<Sale> SaleCustomers { get; set; } = new List<Sale>();
 
     public virtual ICollection<Sale> SaleSellers { get; set; } = new List<Sale>();

@@ -82,6 +82,7 @@ public partial class ItemSold(IServiceProvider provider) : ObservableObject
             {
                 Content = "我要买下您的宝贝，等待您的回复.",
                 Unread = 0,
+                SenderId = userCenter.CurrentUser.Id,
                 ChatId = chatList.ChatId,
                 Timestamp = sale.Timestamp,
                 MsgId = "MSG-" + Guid.NewGuid().ToString()[..12]

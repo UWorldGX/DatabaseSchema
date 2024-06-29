@@ -28,14 +28,16 @@ public partial class xpertContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
-            .UseCollation("utf8mb4_zh_0900_as_cs")
+            .UseCollation("utf8mb4_0900_ai_ci")
             .HasCharSet("utf8mb4");
 
         modelBuilder.Entity<ChatList>(entity =>
         {
             entity.HasKey(e => e.ChatId).HasName("PRIMARY");
 
-            entity.ToTable("chat_lists");
+            entity
+                .ToTable("chat_lists")
+                .UseCollation("utf8mb4_zh_0900_as_cs");
 
             entity.HasIndex(e => e.CustomerId, "F_chats_to_users_customers");
 
@@ -68,7 +70,9 @@ public partial class xpertContext : DbContext
         {
             entity.HasKey(e => e.ItemId).HasName("PRIMARY");
 
-            entity.ToTable("items");
+            entity
+                .ToTable("items")
+                .UseCollation("utf8mb4_zh_0900_as_cs");
 
             entity.HasIndex(e => e.SellerId, "F_items_to_user_sellers");
 
@@ -76,7 +80,6 @@ public partial class xpertContext : DbContext
 
             entity.Property(e => e.ItemId)
                 .HasMaxLength(32)
-                .IsConcurrencyToken()
                 .HasColumnName("item_id");
             entity.Property(e => e.DelistingTimestamp)
                 .HasColumnType("datetime")
@@ -87,7 +90,7 @@ public partial class xpertContext : DbContext
                 .HasColumnName("item_name");
             entity.Property(e => e.ItemStatus)
                 .IsRequired()
-                .HasMaxLength(16)
+                .HasMaxLength(8)
                 .HasColumnName("item_status");
             entity.Property(e => e.ListingTimestamp)
                 .HasColumnType("datetime")
@@ -121,12 +124,16 @@ public partial class xpertContext : DbContext
         {
             entity.HasKey(e => e.MsgId).HasName("PRIMARY");
 
-            entity.ToTable("messages");
+            entity
+                .ToTable("messages")
+                .UseCollation("utf8mb4_zh_0900_as_cs");
 
             entity.HasIndex(e => e.ChatId, "F_msg_to_chat_id");
 
+            entity.HasIndex(e => e.SenderId, "F_msg_to_sender");
+
             entity.Property(e => e.MsgId)
-                .HasMaxLength(64)
+                .HasMaxLength(32)
                 .HasColumnName("msg_id");
             entity.Property(e => e.ChatId)
                 .IsRequired()
@@ -136,22 +143,32 @@ public partial class xpertContext : DbContext
                 .IsRequired()
                 .HasMaxLength(255)
                 .HasColumnName("content");
+            entity.Property(e => e.SenderId)
+                .IsRequired()
+                .HasMaxLength(32)
+                .HasColumnName("sender_id");
             entity.Property(e => e.Timestamp)
                 .HasColumnType("datetime")
                 .HasColumnName("timestamp");
-            entity.Property(e => e.Unread)
-                .HasColumnName("unread");
+            entity.Property(e => e.Unread).HasColumnName("unread");
 
             entity.HasOne(d => d.Chat).WithMany(p => p.Messages)
                 .HasForeignKey(d => d.ChatId)
                 .HasConstraintName("F_msg_to_chat_id");
+
+            entity.HasOne(d => d.Sender).WithMany(p => p.Messages)
+                .HasForeignKey(d => d.SenderId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("F_msg_to_sender");
         });
 
         modelBuilder.Entity<Sale>(entity =>
         {
             entity.HasKey(e => e.SaleId).HasName("PRIMARY");
 
-            entity.ToTable("sales");
+            entity
+                .ToTable("sales")
+                .UseCollation("utf8mb4_zh_0900_as_cs");
 
             entity.HasIndex(e => e.ItemId, "F_sales_to_items");
 
@@ -161,8 +178,7 @@ public partial class xpertContext : DbContext
 
             entity.Property(e => e.SaleId)
                 .HasMaxLength(128)
-                .HasColumnName("sale_id")
-                .IsConcurrencyToken();
+                .HasColumnName("sale_id");
             entity.Property(e => e.CustomerId)
                 .IsRequired()
                 .HasMaxLength(32)
@@ -180,7 +196,7 @@ public partial class xpertContext : DbContext
                 .HasColumnName("seller_id");
             entity.Property(e => e.Status)
                 .IsRequired()
-                .HasMaxLength(8)
+                .HasMaxLength(16)
                 .HasColumnName("status");
             entity.Property(e => e.Timestamp)
                 .HasColumnType("datetime")
@@ -206,7 +222,9 @@ public partial class xpertContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-            entity.ToTable("user");
+            entity
+                .ToTable("user")
+                .UseCollation("utf8mb4_zh_0900_as_cs");
 
             entity.Property(e => e.Id)
                 .HasMaxLength(32)
@@ -244,7 +262,9 @@ public partial class xpertContext : DbContext
         {
             entity.HasKey(e => e.UserId).HasName("PRIMARY");
 
-            entity.ToTable("user_privkey");
+            entity
+                .ToTable("user_privkey")
+                .UseCollation("utf8mb4_zh_0900_as_cs");
 
             entity.Property(e => e.UserId)
                 .HasMaxLength(32)

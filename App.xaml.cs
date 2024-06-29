@@ -58,6 +58,9 @@ public partial class App : Application
         services.AddTransient<LoginManager>();
         services.AddScoped<LoginVM>();
         services.AddScoped<LoginWindow>();
+        //交易查看窗口
+        services.AddTransient<SaleOperateVM>();
+        services.AddTransient<SaleOperateWindow>();
 
         //为用户使用的查询类
         services.AddTransient<DataQueryerForCustomer>();

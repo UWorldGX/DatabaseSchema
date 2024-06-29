@@ -36,6 +36,8 @@ public partial class MainVM : ObservableObject
 
     [ObservableProperty]
     private byte unreads;
+    [ObservableProperty]
+    private string msgContent;
 
     [ObservableProperty]
     private ObservableCollection<ItemTobeSold> itemsCollection = [];
@@ -48,6 +50,8 @@ public partial class MainVM : ObservableObject
 
     [ObservableProperty]
     private ObservableCollection<ChatListVM> chats = [];
+
+    private bool isChatting = false;
 
     [RelayCommand]
     private void StartListening()
@@ -67,21 +71,51 @@ public partial class MainVM : ObservableObject
         {
             UserCenter userCenter = _provider.GetRequiredService<UserCenter>();
             CurrentUserInfo = userCenter.GetCurrentUserInfo();
+            var _queryer = _provider.GetRequiredService<DataQueryerForCustomer>();
+            var msgs = _queryer.GetChats(userCenter.CurrentUser);
+            if (msgs != null)
+            {
+                Chats.Clear();
+                Unreads = 0;
+                foreach (var c in msgs)
+                {
+                    var cvm = ChatListVM.Create(c, _provider, userCenter.CurrentUser);
+                    Chats.Add(cvm);
+                    foreach (var ms in c.Messages)
+                    {
+                        if (ms.Unread == 0)
+                        {
+                            Unreads++;
+                        }
 
+                    }
+                    //if (c.SellerId == CurrentUserInfo.Id)
+                    //{
+
+                    //}
+                    //else
+                    //{
+
+                    //}
+                }
+            }
         }
-        //Task.Run(() =>
-        //{
-        //    while (true)
-        //    {
-                
-        //        Thread.Sleep(3000);
-        //    }
-        //});
-    }
+       
+            //Task.Run(() =>
+            //{
+            //    while (true)
+            //    {
+
+            //        Thread.Sleep(3000);
+            //    }
+            //});
+        }
 
     [RelayCommand]
     private void LoadSpecificPage(object sender)
     {
+        if (isChatting)
+            return;
         if (sender is HandyControl.Controls.TabControl tabControl)
         {
             
@@ -90,6 +124,7 @@ public partial class MainVM : ObservableObject
             {
                 case 0:
                     {
+                        isChatting = false;
                         break;
                     }
                 //切换到第1页，需要刷新商品信息
@@ -97,6 +132,7 @@ public partial class MainVM : ObservableObject
                     {
                         try
                         {
+                            isChatting = false;
                             UserCenter userCenter2 = _provider.GetRequiredService<UserCenter>();
 
                             ItemsCollection.Clear();
@@ -121,6 +157,7 @@ public partial class MainVM : ObservableObject
                     {
                         try
                         {
+                            isChatting = false;
                             SalesCollection.Clear();
                             UserCenter userCenter1 = _provider.GetRequiredService<UserCenter>();
                             var queryer = _provider.GetRequiredService<DataQueryerForCustomer>();
@@ -147,41 +184,13 @@ public partial class MainVM : ObservableObject
                         }
                     }
                 case 3:
-                    var _queryer = _provider.GetRequiredService<DataQueryerForCustomer>();
-                    UserCenter userCenter = _provider.GetRequiredService<UserCenter>();
-                    var msgs = _queryer.GetChats(userCenter.CurrentUser);
-                    if (msgs != null)
-                    {
-                        Chats.Clear();
-                        Unreads = 0;
-                        foreach (var c in msgs)
-                        {
-                            var cvm = ChatListVM.Create(c, _provider, userCenter.CurrentUser);
-                            Chats.Add(cvm);
-                            foreach (var ms in c.Messages)
-                            {
-                                if (ms.Unread == 0)
-                                {
-                                    Unreads++;
-                                }
-
-                            }
-                            //if (c.SellerId == CurrentUserInfo.Id)
-                            //{
-
-                            //}
-                            //else
-                            //{
-
-                            //}
-                        }
                         //if(unreadCount > 0 )
                         //{
                         //    Growl.Info($"您有{unreadCount}条未读消息.");
                         //}
-                    }
                     break;
                 default:
+                    isChatting = false;
                     break;
             }
             RefreshUserInfo();
@@ -240,14 +249,78 @@ public partial class MainVM : ObservableObject
     {
         if(sender is ListBox listbox)
         {
+            if (listbox.SelectedIndex == -1)
+                return;
+            isChatting = true;
             CurrentMessages.Clear();
             var currentChat = Chats[listbox.SelectedIndex];
             foreach(var m in currentChat.Messages)
             {
-                var msgVm = new MsgVM(_provider);
-                Utilities.Copy(m, msgVm);
-                CurrentMessages.Add(msgVm);
+                m.Unread = 1;
+                Unreads--;
+                CurrentMessages.Add(m);
             }
         }
+    }
+
+    /// <summary>
+    /// 向对方发出信息
+    /// </summary>
+    [RelayCommand]
+    private void Chat()
+    {
+        try
+        {
+            MsgVM msg = new(_provider)
+            {
+                Unread = 0,
+                SenderId = CurrentUserInfo.Id,
+                Role = "Sender",
+                ChatId = CurrentMessages.First().ChatId,
+                Timestamp = DateTime.Now,
+                Content = MsgContent,
+                MsgId = "MSG-" + Guid.NewGuid().ToString()[..12]
+            }
+            ;
+            Message msgModel = new();
+            Utilities.Copy(msg, msgModel);
+            CurrentMessages.Add(msg);
+            var queryer = _provider.GetRequiredService<DataQueryerForCustomer>();
+            UserCenter userCenter = _provider.GetRequiredService<UserCenter>();
+            queryer.AddMessage(msgModel, userCenter.CurrentUser);
+            MsgContent = string.Empty;
+
+
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Error(ex.Message);
+        }
+    }
+    [RelayCommand]
+    private void SearchAllSales()
+    {
+        var saleOperateVM = _provider.GetRequiredService<SaleOperateVM>();
+        var queryer = _provider.GetRequiredService<DataQueryerForCustomer>();
+
+        var saleList = queryer.GetSales
+    }
+
+    [RelayCommand]
+    private void SearchCurrentSales()
+    {
+
+    }
+
+    [RelayCommand]
+    private void ModifyUserInfo()
+    {
+
+    }
+
+    [RelayCommand]
+    private void ModifyPwd()
+    {
+
     }
 }

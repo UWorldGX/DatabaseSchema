@@ -22,4 +22,11 @@ public partial class MsgVM(IServiceProvider provider) : ObservableObject
 
     [ObservableProperty]
     private string content;
+    [ObservableProperty]
+    private string senderId;
+    [ObservableProperty]
+    private sbyte unread;
+
+    [ObservableProperty]
+    private string role = "Receiver";
 }
