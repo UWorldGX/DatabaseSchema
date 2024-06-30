@@ -61,6 +61,7 @@ namespace FirewallDemo.Model
         {
             throw new NotImplementedException();
         }
+
         /// <summary>
         /// 根据用户Id获取用户,若权限低于Admin则不可获得管理员用户
         /// </summary>

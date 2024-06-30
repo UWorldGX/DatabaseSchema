@@ -271,7 +271,7 @@ public partial class xpertContext : DbContext
                 .HasColumnName("user_id");
             entity.Property(e => e.PrivateKey)
                 .IsRequired()
-                .HasMaxLength(1024)
+                .HasMaxLength(2048)
                 .HasColumnName("private_key");
         });
 

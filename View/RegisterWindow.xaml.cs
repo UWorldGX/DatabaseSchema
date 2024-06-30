@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FirewallDemo.ViewModel;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,8 +20,11 @@ namespace FirewallDemo.View
     /// </summary>
     public partial class RegisterWindow : Window
     {
-        public RegisterWindow()
+        private readonly RegisterVM _vm;
+        public RegisterWindow(RegisterVM vm)
         {
+            _vm = vm;
+            this.DataContext = _vm;
             InitializeComponent();
         }
     }
