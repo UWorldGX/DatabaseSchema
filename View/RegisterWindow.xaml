@@ -4,9 +4,78 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FirewallDemo.View"
+        xmlns:hc="https://handyorg.github.io/handycontrol"
+        xmlns:ex="clr-namespace:FirewallDemo.View.Extended"
         mc:Ignorable="d"
-        Title="RegisterWindow" Height="450" Width="800">
-    <Grid>
-        
-    </Grid>
+        Title="用户注册" Height="350" Width="300">
+    <Window.Background>
+        <LinearGradientBrush EndPoint="1,0">
+            <GradientStop Color="#fbc2eb"
+                          Offset="0.1" />
+            <GradientStop Color="#a6c1ee"
+                          Offset="1.0" />
+        </LinearGradientBrush>
+    </Window.Background>
+    <!--用户名和密码输入-->
+    <hc:UniformSpacingPanel
+        Orientation="Vertical"
+        Spacing="5"
+        Margin="10">
+        <TextBox
+            hc:InfoElement.TitlePlacement="Left"
+            hc:InfoElement.TitleWidth="50"
+            Text="{Binding UserName}"
+            Style="{StaticResource TextBoxExtend}"
+            hc:TitleElement.Title="用户名"/>
+        <TextBox
+            hc:InfoElement.TitlePlacement="Left"
+            hc:InfoElement.TitleWidth="50"
+            Text="{Binding NickName}"
+            Style="{StaticResource TextBoxExtend}"
+            hc:TitleElement.Title="昵称"/>
+        <PasswordBox
+            hc:InfoElement.TitlePlacement="Left"
+            hc:InfoElement.TitleWidth="50"
+            Style="{StaticResource PasswordBoxExtend}"
+            ex:PwdBoxExtended.Password="{Binding Password, Mode=TwoWay}"
+            hc:TitleElement.Title="密码">
+        </PasswordBox>
+        <PasswordBox
+            hc:InfoElement.TitlePlacement="Left"
+            hc:InfoElement.TitleWidth="50"
+            Style="{StaticResource PasswordBoxExtend}"
+            ex:PwdBoxExtended.Password="{Binding Password2, Mode=TwoWay}"
+            hc:TitleElement.Title="确认密码">
+        </PasswordBox>
+        <hc:SimpleStackPanel Orientation="Horizontal">
+            <TextBlock
+                Width="50"
+                Text="性别:"/>
+            <hc:ButtonGroup
+                Layout="Uniform"
+                Style="{StaticResource ButtonGroupSolid}">
+                <RadioButton
+                    IsChecked="{Binding IsMale}"
+                    Content="男"/>
+                <RadioButton
+                    IsChecked="{Binding IsFemale}"
+                    Content="女"/>
+            </hc:ButtonGroup>
+        </hc:SimpleStackPanel>
+        <hc:NumericUpDown
+            hc:InfoElement.TitlePlacement="Left"
+            hc:InfoElement.TitleWidth="50"
+            hc:TitleElement.Title="年龄"
+            Increment="1"
+            Style="{StaticResource NumericUpDownExtend}"
+            Value="{Binding Age}"/>
+        <TextBlock
+            Text="开业大酬宾，注册用户赠送¥1500!"
+            Style="{StaticResource TextBlockDefaultAccent}"/>
+        <Separator/>
+        <Button
+            Style="{StaticResource ButtonInfo}"
+            Command="{Binding RegisterCommand}"
+            Content="注册"/>
+    </hc:UniformSpacingPanel>
 </Window>

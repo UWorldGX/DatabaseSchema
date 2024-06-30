@@ -224,6 +224,25 @@ public class DataQueryerForCustomer(IServiceProvider provider) : IDataQueryer, I
         }
     }
 
+    public IEnumerable<Sale>? GetSales(User caller)
+    {
+        using var serviceScope = _provider.CreateScope();
+        using var dataContext = serviceScope.ServiceProvider.GetRequiredService<xpertContext>();
+        try
+        {
+            var result = dataContext.Sales
+                .Where(u => u.CustomerId == caller.Id || u.SellerId == caller.Id)
+                .Include(u => u.Item)
+                .Select(u => u).ToArray() ?? throw new ArgumentNullException(nameof(caller), "不存在符合条件的销售记录");
+            return result;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Error(ex.Message);
+            return null;
+        }
+    }
+
     public bool SetSaleStatus(string saleId, SaleStatus status, User caller)
     {
         var permission = CheckPermission(caller);

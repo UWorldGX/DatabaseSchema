@@ -46,27 +46,33 @@
                 hc:InfoElement.TitlePlacement="Left"
                 hc:InfoElement.TitleWidth="50"
                 Style="{StaticResource PasswordBoxExtend}"
-                ex:PwdBoxExtended.Password="{Binding Password}"
+                ex:PwdBoxExtended.Password="{Binding Password, Mode=TwoWay}"
                 hc:TitleElement.Title="密码">
-                <!--<hc:Interaction.Triggers>
-                <hc:EventTrigger EventName="PasswordChanged">
-                <hc:InvokeCommandAction Command="{Binding SetPasswordCommand}" CommandParameter=""/>
-                </hc:EventTrigger>
-                </hc:Interaction.Triggers>-->
             </PasswordBox>
             <Button
                 Style="{StaticResource ButtonPrimary}"
                 Command="{Binding LoginCommand}"
                 Content="登录"/>
             <Button
-                Command="{Binding FillCustomerCommand}"
-                Content="调试:用户1登录"/>
-            <Button
-                Command="{Binding FillCustomer2Command}"
-                Content="调试:用户2登录"/>
-            <Button
-                Command="{Binding FillAdminCommand}"
-                Content="调试:管理员登录"/>
+                Style="{StaticResource ButtonInfo}"
+                Command="{Binding RegisterCommand}"
+                Content="注册"/>
+            <ComboBox
+                ItemsSource="{Binding UserList}"
+                >
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock
+                            Text="{Binding Nickname}"/>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+                <hc:Interaction.Triggers>
+                    <hc:EventTrigger EventName="SelectionChanged">
+                        <hc:InvokeCommandAction Command="{Binding FillUserCommand}"
+                                                CommandParameter="{Binding RelativeSource={RelativeSource Mode = FindAncestor, AncestorType=ComboBox}}"/>
+                    </hc:EventTrigger>
+                </hc:Interaction.Triggers>
+            </ComboBox>
         </hc:UniformSpacingPanel>
 
     </Grid>

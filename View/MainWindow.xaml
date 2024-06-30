@@ -62,7 +62,10 @@
                 </hc:SimpleStackPanel>
             </Grid>
         </hc:TabItem>
-        <hc:TabItem Foreground="Coral" Header="出售" Background="Transparent">
+        <!--商品出售页面-->
+        <hc:TabItem Foreground="Coral" Header="出售" Background="Transparent"
+                    IsEnabled="{Binding IsAdmin, Converter={StaticResource Boolean2BooleanReConverter}}"
+                    Visibility="{Binding IsAdmin, Converter={StaticResource Boolean2VisibilityReConverter}}">
             <Grid
                 Margin="10">
                 <Grid.RowDefinitions>
@@ -83,16 +86,41 @@
                                     Background="{StaticResource RegionBrush}"
                                     Margin="5"
                                     hc:BorderElement.CornerRadius="3"
-                                    Height="90" Width="380">
+                                    Height="100" Width="380">
                                 <hc:SimpleStackPanel
                                     Orientation="Horizontal">
                                     <Image
                                         Source="{Binding Picture}"
                                         Height="80"
                                         Width="80"/>
-                                    <TextBlock Text="{Binding Summary}"
-                                               TextWrapping="WrapWithOverflow"
-                                               Width="220"/>
+                                    <hc:SimpleStackPanel
+                                        >
+                                        <ScrollViewer
+                                            Width="220"
+                                            Height="70">
+                                            <TextBlock Text="{Binding Summary}"
+
+                                                       TextWrapping="WrapWithOverflow"
+                                                       Width="220"/>
+                                        </ScrollViewer>
+                                        <hc:SimpleStackPanel
+                                            Orientation="Horizontal"
+                                            HorizontalAlignment="Left">
+                                            <TextBlock
+                                                Text="¥"
+                                                Foreground="OrangeRed"
+                                                FontSize="24"
+                                                FontWeight="Bold"/>
+                                            <TextBlock
+                                                Text="{Binding SellPrice}"
+                                                Foreground="OrangeRed"
+                                                FontSize="24"
+                                                FontWeight="Bold"/>
+
+                                        </hc:SimpleStackPanel>
+                                    </hc:SimpleStackPanel>
+
+
                                     <!--对商品的快速操作-->
                                     <hc:SplitButton
                                         Style="{StaticResource SplitButtonPrimary}"
@@ -130,100 +158,202 @@
                 </hc:UniformSpacingPanel>
             </Grid>
         </hc:TabItem>
-        <hc:TabItem Foreground="Coral" Header="商品检索" Background="Transparent">
-            <hc:TransitioningContentControl>
-                <hc:ScrollViewer IsInertiaEnabled="True">
-                    <hc:CoverView
-                        Margin="10" MaxWidth="420" ItemWidth="380" ItemHeight="90"
-                        ItemsSource="{Binding SalesCollection}">
-                        <hc:CoverView.ItemHeaderTemplate>
-                            <DataTemplate>
-                                <Border Effect="{StaticResource EffectShadow2}"
-                                        Background="{StaticResource RegionBrush}"
+        <!--商品检索与过滤-->
+        <hc:TabItem Foreground="Coral" Header="商品检索" Background="Transparent"
+                    IsEnabled="{Binding IsAdmin, Converter={StaticResource Boolean2BooleanReConverter}}"
+                    Visibility="{Binding IsAdmin, Converter={StaticResource Boolean2VisibilityReConverter}}">
+            <hc:ScrollViewer IsInertiaEnabled="True">
+                <hc:DrawerContainer>
+                    <hc:SimplePanel>
+                        <!--过滤选项-->
+                        <hc:Drawer Name="drawerLeft" Dock="Right" ShowMode="Push">
+                            <Grid
+                                Background="Azure">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="15"/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+                                <Button Command="hc:ControlCommands.Close" Grid.Row="0" HorizontalAlignment="Right"
+                                        Foreground="{DynamicResource PrimaryTextBrush}"
+                                        Style="{StaticResource ButtonIcon}"
+                                        hc:IconElement.Geometry="{StaticResource DeleteFillCircleGeometry}"/>
+                                <!--具体过滤选项-->
+                                <hc:UniformSpacingPanel
+                                    Orientation="Vertical"
+                                    Spacing="5"
+                                    Grid.Row="1"
+                                    DataContext="{Binding FilterVM}">
+                                    <TextBlock
+                                        Text="过滤选项..." Style="{StaticResource TextBlockTitle}"
+                                        HorizontalAlignment="Left"/>
+
+                                    <hc:SearchBar
+                                        CommandParameter="{Binding RelativeSource={RelativeSource Self}}"
+                                        Command="{Binding FilterByTypeCommand}"
+                                        x:Name="typeFilterSearchbar"
+                                        hc:InfoElement.Title="类别:"
+                                        Text="{Binding TypeFilter}"
+                                        Style="{StaticResource SearchBarPlus}"
+                                        IsRealTime="False"
                                         Margin="5"
-                                        hc:BorderElement.CornerRadius="10"
-                                        Height="90" Width="380">
-                                    <hc:SimpleStackPanel
+                                        />
+
+                                    <hc:ElementGroup
+                                        Layout="Stack"
                                         Orientation="Horizontal"
-                                        Width="370">
-                                        <Image
-                                            Source="{Binding Picture}"
-                                            Height="80"
-                                            Width="80"/>
-                                        <hc:SimpleStackPanel
-                                            Orientation="Vertical"
-                                            Width="200">
-                                            <TextBlock Text="{Binding ItemName}"
-                                                       TextWrapping="WrapWithOverflow"
-                                                       Width="300"/>
-                                            <hc:SimpleStackPanel
-                                                Orientation="Horizontal"
-                                                HorizontalAlignment="Left">
-                                                <TextBlock
-                                                    Text="¥"
-                                                    Foreground="OrangeRed"
-                                                    FontSize="24"
-                                                    FontWeight="Bold"/>
-                                                <TextBlock
-                                                    Text="{Binding SellPrice}"
-                                                    Foreground="OrangeRed"
-                                                    FontSize="24"
-                                                    FontWeight="Bold"/>
+                                        HorizontalContentAlignment="Stretch"
+                                        Style="{StaticResource ElementGroupSolid}">
+                                        <hc:NumericUpDown
+                                            hc:InfoElement.TitlePlacement="Left"
+                                            hc:InfoElement.TitleWidth="50"
+                                            hc:TitleElement.Title="最低价"
+                                            Increment="1"
+                                            Style="{StaticResource NumericUpDownExtend}"
+                                            Value="{Binding SellPriceMin}"/>
+                                        <hc:NumericUpDown
+                                            hc:InfoElement.TitlePlacement="Left"
+                                            hc:InfoElement.TitleWidth="50"
+                                            hc:TitleElement.Title="最高价"
+                                            Increment="1"
+                                            Style="{StaticResource NumericUpDownExtend}"
+                                            Value="{Binding SellPriceMax}"/>
+                                    </hc:ElementGroup>
 
-                                            </hc:SimpleStackPanel>
-                                            <TextBlock Text="{Binding SellerNickname}"
-                                                       FontStyle="Italic"/>
-                                        </hc:SimpleStackPanel>
-                                        <TextBlock Text="{Binding Type}"
-                                                   Style="{StaticResource TextBlockDefaultThiLight}"/>
+                                    <hc:SimpleStackPanel
+                                        Orientation="Horizontal">
+                                        <hc:DateTimePicker
+                                            hc:InfoElement.TitlePlacement="Top"
+                                            Style="{StaticResource DateTimePickerExtend}"
+                                            HorizontalAlignment="Center"
+                                            hc:InfoElement.Title="起始时间:"
+                                            SelectedDateTime="{Binding StartTime}">
+                                            <!--<hc:Interaction.Triggers>
+                                            <hc:EventTrigger EventName="SelectedDateTimeChanged">
+                                            <hc:InvokeCommandAction Command="{Binding VerifyTimeCommand}"/>
+                                            </hc:EventTrigger>
+                                            </hc:Interaction.Triggers>-->
+                                        </hc:DateTimePicker>
+                                        <hc:DateTimePicker
+                                            hc:InfoElement.TitlePlacement="Top"
+                                            Style="{StaticResource DateTimePickerExtend}"
+                                            HorizontalAlignment="Center"
+                                            hc:InfoElement.Title="结束时间:"
+                                            SelectedDateTime="{Binding EndTime}">
+                                            <!--<hc:Interaction.Triggers>
+                                            <hc:EventTrigger EventName="SelectedDateTimeChanged">
+                                            <hc:InvokeCommandAction Command="{Binding VerifyTimeCommand}"/>
+                                            </hc:EventTrigger>
+                                            </hc:Interaction.Triggers>-->
+                                        </hc:DateTimePicker>
                                     </hc:SimpleStackPanel>
-                                </Border>
-                            </DataTemplate>
-                        </hc:CoverView.ItemHeaderTemplate>
-                        <!--商品单项展开后的预览-->
-                        <hc:CoverView.ItemTemplate>
-                            <DataTemplate>
-                                <Border Margin="5">
-                                    <Grid
-                                        Grid.Row ="1">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="30"/>
-                                            <RowDefinition/>
-                                        </Grid.RowDefinitions>
-                                        <hc:UniformSpacingPanel
-                                            Orientation="Horizontal"
-                                            Spacing="5">
-                                            <Button
-                                                Content="发出购买请求"
-                                                Command="{Binding SendPurchaseCommand}"
-                                                Style="{StaticResource ButtonSuccess}"/>
-                                            <Button
-                                                Content="联系卖家"
-                                                Command="{Binding ChatToSellerCommand}"
-                                                Style="{StaticResource ButtonInfo}"/>
+                                    <Button
+                                        Style="{StaticResource ButtonDashed}"
+                                        Content="清除所有过滤条件"
+                                        Command="{Binding ClearFilterCommand}"/>
 
-                                        </hc:UniformSpacingPanel>
+                                </hc:UniformSpacingPanel>
+                            </Grid>
+                        </hc:Drawer>
+                        <!--商品信息-->
+                        <hc:CoverView
+                            Margin="10" MaxWidth="420" ItemWidth="380" ItemHeight="90"
+                            ItemsSource="{Binding SalesCollection}">
+                            <hc:CoverView.ItemHeaderTemplate>
+                                <DataTemplate>
+                                    <Border Effect="{StaticResource EffectShadow2}"
+                                            Background="{StaticResource RegionBrush}"
+                                            Margin="5"
+                                            hc:BorderElement.CornerRadius="10"
+                                            Height="90" Width="380">
                                         <hc:SimpleStackPanel
-                                            Grid.Row="1">
+                                            Orientation="Horizontal"
+                                            Width="370">
                                             <Image
                                                 Source="{Binding Picture}"
                                                 Height="80"
                                                 Width="80"/>
-                                            <TextBlock
-                                                TextWrapping="WrapWithOverflow"
-                                                Text="{Binding Summary}" VerticalAlignment="Top"
-                                                HorizontalAlignment="Center"/>
+                                            <hc:SimpleStackPanel
+                                                Orientation="Vertical"
+                                                Width="200">
+                                                <TextBlock Text="{Binding ItemName}"
+                                                           TextWrapping="WrapWithOverflow"
+                                                           Width="300"/>
+                                                <hc:SimpleStackPanel
+                                                    Orientation="Horizontal"
+                                                    HorizontalAlignment="Left">
+                                                    <TextBlock
+                                                        Text="¥"
+                                                        Foreground="OrangeRed"
+                                                        FontSize="24"
+                                                        FontWeight="Bold"/>
+                                                    <TextBlock
+                                                        Text="{Binding SellPrice}"
+                                                        Foreground="OrangeRed"
+                                                        FontSize="24"
+                                                        FontWeight="Bold"/>
+
+                                                </hc:SimpleStackPanel>
+                                                <TextBlock Text="{Binding SellerNickname}"
+                                                           FontStyle="Italic"/>
+                                            </hc:SimpleStackPanel>
+                                            <TextBlock Text="{Binding Type}"
+                                                       Style="{StaticResource TextBlockDefaultThiLight}"/>
                                         </hc:SimpleStackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </hc:CoverView.ItemHeaderTemplate>
+                            <!--商品单项展开后的预览-->
+                            <hc:CoverView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="5">
+                                        <Grid
+                                            Grid.Row ="1">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="30"/>
+                                                <RowDefinition/>
+                                            </Grid.RowDefinitions>
+                                            <hc:UniformSpacingPanel
+                                                Orientation="Horizontal"
+                                                Spacing="5">
+                                                <Button
+                                                    Content="发出购买请求"
+                                                    Command="{Binding SendPurchaseCommand}"
+                                                    Style="{StaticResource ButtonSuccess}"/>
+                                                <Button
+                                                    Content="联系卖家"
+                                                    Command="{Binding ChatToSellerCommand}"
+                                                    Style="{StaticResource ButtonInfo}"/>
+
+                                            </hc:UniformSpacingPanel>
+                                            <hc:SimpleStackPanel
+                                                Grid.Row="1">
+                                                <Image
+                                                    Source="{Binding Picture}"
+                                                    Height="80"
+                                                    Width="80"/>
+                                                <TextBlock
+                                                    TextWrapping="WrapWithOverflow"
+                                                    Text="{Binding Summary}" VerticalAlignment="Top"
+                                                    HorizontalAlignment="Center"/>
+                                            </hc:SimpleStackPanel>
 
 
-                                    </Grid>
+                                        </Grid>
 
-                                </Border>
-                            </DataTemplate>
-                        </hc:CoverView.ItemTemplate>
-                    </hc:CoverView>
-                </hc:ScrollViewer>
-            </hc:TransitioningContentControl>
+                                    </Border>
+                                </DataTemplate>
+                            </hc:CoverView.ItemTemplate>
+                        </hc:CoverView>
+                        <ToggleButton
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Bottom"
+                            Content="筛选..." IsChecked="{Binding IsOpen,ElementName=drawerLeft}"/>
+
+                    </hc:SimplePanel>
+                </hc:DrawerContainer>
+
+
+            </hc:ScrollViewer>
         </hc:TabItem>
         <!--消息-->
         <hc:TabItem Foreground="Coral" Background="Transparent">
@@ -269,7 +399,9 @@
                     </ListBox.ItemTemplate>
                     <hc:Interaction.Triggers>
                         <hc:EventTrigger EventName="SelectionChanged">
-                            <hc:InvokeCommandAction Command="{Binding LoadMsgOfChatsCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode = FindAncestor, AncestorType=ListBox}}"/>
+                            <hc:InvokeCommandAction
+                                Command="{Binding LoadMsgOfChatsCommand}"
+                                CommandParameter="{Binding RelativeSource={RelativeSource Mode = FindAncestor, AncestorType=ListBox}}"/>
                         </hc:EventTrigger>
                     </hc:Interaction.Triggers>
                 </ListBox>
@@ -308,7 +440,10 @@
 
             </Grid>
         </hc:TabItem>
-        <hc:TabItem Foreground="Coral" Header="我" Background="Transparent">
+        <!--个人页面-->
+        <hc:TabItem Foreground="Coral" Header="我" Background="Transparent"
+                    IsEnabled="{Binding IsAdmin, Converter={StaticResource Boolean2BooleanReConverter}}"
+                    Visibility="{Binding IsAdmin, Converter={StaticResource Boolean2VisibilityReConverter}}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="35"/>
@@ -367,7 +502,9 @@
 
             </Grid>
         </hc:TabItem>
-        <hc:TabItem Foreground="Coral" Header="管理员看板" Background="Transparent">
+        <hc:TabItem Foreground="Coral" Header="管理员看板" Background="Transparent"
+                    IsEnabled="{Binding IsAdmin}"
+                    Visibility="{Binding IsAdmin, Converter={StaticResource Boolean2VisibilityConverter}}">
 
         </hc:TabItem>
     </hc:TabControl>

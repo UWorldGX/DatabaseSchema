@@ -7,6 +7,15 @@
         xmlns:local="clr-namespace:FirewallDemo.View"
         mc:Ignorable="d"
         Title="要售出什么?" Height="650" Width="400">
+    <Window.Background>
+        <LinearGradientBrush EndPoint="1,0">
+            <GradientStop Color="#fbc2eb"
+                          Offset="0.1" />
+            <GradientStop Color="#a6c1ee"
+                          Offset="1.0" />
+        </LinearGradientBrush>
+    </Window.Background>
+
     <Grid
         Margin="15">
         <Grid.RowDefinitions>

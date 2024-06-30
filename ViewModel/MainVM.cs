@@ -24,20 +24,27 @@ public partial class MainVM : ObservableObject
 {
     private readonly IServiceProvider _provider;
 
-    public MainVM(IServiceProvider provider, UserCenter userCenter)
+    public MainVM(IServiceProvider provider, UserCenter userCenter, FilterVM vM)
     {
         _provider = provider;
+        filterVM = vM;
         CurrentUserInfo = userCenter.GetCurrentUserInfo();
         RefreshUserInfo();
+        if(userCenter.CurrentUser.Role == "ADMIN")
+        {
+            IsAdmin = true;
+        }
     }
 
     [ObservableProperty]
     private UserInfo currentUserInfo;
+    [ObservableProperty]
+    private bool isAdmin = false;
 
     [ObservableProperty]
     private byte unreads;
     [ObservableProperty]
-    private string msgContent;
+    private string msgContent = string.Empty;
 
     [ObservableProperty]
     private ObservableCollection<ItemTobeSold> itemsCollection = [];
@@ -50,6 +57,9 @@ public partial class MainVM : ObservableObject
 
     [ObservableProperty]
     private ObservableCollection<ChatListVM> chats = [];
+
+    [ObservableProperty]
+    private FilterVM filterVM;
 
     private bool isChatting = false;
 
@@ -110,6 +120,46 @@ public partial class MainVM : ObservableObject
             //    }
             //});
         }
+
+    public void Filter(string filterType, string filterVal)
+    {
+        switch(filterType)
+        {
+            case "type":
+                {
+                    var filteredByType = ItemsCollection.Where(i => i.Type.Contains(filterVal))
+                        .Select(i => i);
+                    if(filteredByType.Any())
+                    {
+                        ItemsCollection.Clear();
+                        foreach(var i in filteredByType)
+                            ItemsCollection.Add(i);
+                        Growl.Info($"共查找出{ItemsCollection.Count}件商品.");
+                    }
+                    else
+                    {
+                        Growl.Error("没有符合条件的商品.");
+                    }
+                    break;
+                }
+                //清除所有筛选条件
+            case "default":
+                {
+                    ItemsCollection.Clear();
+                    UserCenter userCenter2 = _provider.GetRequiredService<UserCenter>();
+                    var queryer = _provider.GetRequiredService<DataQueryerForCustomer>();
+                    var items = queryer.GetItems(userCenter2.CurrentUser);
+                    if (items != null)
+                        foreach (var i in items)
+                        {
+                            var it = new ItemTobeSold(_provider);
+                            Utilities.Copy(i, it);
+                            ItemsCollection.Add(it);
+                        }
+                    break;
+                }
+        }
+    }
 
     [RelayCommand]
     private void LoadSpecificPage(object sender)
@@ -300,10 +350,20 @@ public partial class MainVM : ObservableObject
     [RelayCommand]
     private void SearchAllSales()
     {
-        var saleOperateVM = _provider.GetRequiredService<SaleOperateVM>();
+        var saleWindow = _provider.GetRequiredService<SaleOperateWindow>();
+        var saleOperateVM = saleWindow.DataContext as SaleOperateVM;
         var queryer = _provider.GetRequiredService<DataQueryerForCustomer>();
+        UserCenter userCenter = _provider.GetRequiredService<UserCenter>();
+        
 
-        var saleList = queryer.GetSales
+        var saleList = queryer.GetSales(userCenter.CurrentUser);
+        if(saleList != null && saleOperateVM is SaleOperateVM vm)
+        {
+            vm.ImportSales(saleList);
+
+            saleWindow.Show();
+        }
+
     }
 
     [RelayCommand]

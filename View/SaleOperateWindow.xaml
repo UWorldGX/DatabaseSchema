@@ -47,10 +47,29 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTextColumn IsReadOnly="True" Binding="{Binding TimeStamp}" Header="创建时间"/>
+                <DataGridTextColumn IsReadOnly="True" Binding="{Binding TimeStamp, StringFormat={}{0:yyyy年MM月dd日 HH:mm}}" Header="创建时间"/>
                 <!--<DataGridCheckBoxColumn Width="100" CanUserResize="False" Binding="{Binding IsSelected}" Header="{ex:Lang Key={x:Static langs:LangKeys.Selected}}"/>-->
                 <!--<DataGridComboBoxColumn ItemsSource="{Binding Source={StaticResource DemoTypes}}" Width="100" CanUserResize="False" SelectedValueBinding="{Binding Type}" Header="{ex:Lang "/>-->
                 <DataGridTextColumn IsReadOnly="True" Binding="{Binding Status}" Header="状态"/>
+                <DataGridTemplateColumn Width="60" CanUserResize="False">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <hc:SplitButton
+                                Content="同意"
+                                Command="{Binding AcceptSaleCommand}">
+                                <hc:SplitButton.DropDownContent>
+                                    <StackPanel
+                                        Width="80">
+                                        <MenuItem
+                                            Padding="0.5"
+                                            BorderThickness="0"
+                                            Header="拒绝" Command="{Binding RejectSaleCommand}"/>
+                                    </StackPanel>
+                                </hc:SplitButton.DropDownContent>
+                            </hc:SplitButton>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

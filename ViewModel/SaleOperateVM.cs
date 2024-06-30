@@ -1,5 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using FirewallDemo.Model.Data;
+using FirewallDemo.Utility;
 using FirewallDemo.ViewModel.EntityVM;
 using HandyControl.Data;
 using System;
@@ -32,6 +34,22 @@ public partial class SaleOperateVM(IServiceProvider provider) : ObservableObject
         foreach (var item in list)
         {
             CurrentSales.Add(item);
+        }
+    }
+
+    public void ImportSales(IEnumerable<Sale> sales)
+    {
+
+        foreach (var item in sales)
+        {
+            var saleVM = new SaleVM(_provider);
+            Utilities.Copy(item, saleVM);
+            Sales.Add(saleVM);
+        }
+        var list = Sales.Take(10).ToList();
+        foreach(var s in list)
+        {
+            CurrentSales.Add(s);
         }
     }
 

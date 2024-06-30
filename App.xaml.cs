@@ -50,6 +50,8 @@ public partial class App : Application
         services.AddScoped<UserCenter>();
         //公钥基础设施
         services.AddTransient<PKI>();
+        //商品过滤VM
+        services.AddScoped<FilterVM>();
         //主窗口
         services.AddSingleton<MainVM>();
         services.AddScoped<MainWindow>();
@@ -58,6 +60,9 @@ public partial class App : Application
         services.AddTransient<LoginManager>();
         services.AddScoped<LoginVM>();
         services.AddScoped<LoginWindow>();
+        //注册窗口
+        services.AddScoped<RegisterVM>();
+        services.AddScoped<RegisterWindow>();
         //交易查看窗口
         services.AddTransient<SaleOperateVM>();
         services.AddTransient<SaleOperateWindow>();
