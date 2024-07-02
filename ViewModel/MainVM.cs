@@ -24,10 +24,13 @@ public partial class MainVM : ObservableObject
 {
     private readonly IServiceProvider _provider;
 
-    public MainVM(IServiceProvider provider, UserCenter userCenter, FilterVM vM)
+    public MainVM(IServiceProvider provider, UserCenter userCenter, 
+        FilterVM vM
+        ,AdminOperateVM avM)
     {
         _provider = provider;
         filterVM = vM;
+        adminOperateVM = avM;
         CurrentUserInfo = userCenter.GetCurrentUserInfo();
         RefreshUserInfo();
         if(userCenter.CurrentUser.Role == "ADMIN")
@@ -40,6 +43,8 @@ public partial class MainVM : ObservableObject
     private UserInfo currentUserInfo;
     [ObservableProperty]
     private bool isAdmin = false;
+    [ObservableProperty]
+    private int currentMoney;
 
     [ObservableProperty]
     private byte unreads;
@@ -61,105 +66,152 @@ public partial class MainVM : ObservableObject
     [ObservableProperty]
     private FilterVM filterVM;
 
+    [ObservableProperty]
+    private AdminOperateVM adminOperateVM;
+
     private bool isChatting = false;
 
-    [RelayCommand]
-    private void StartListening()
-    {
-        //var queryer = _provider.GetRequiredService<DataQueryerForCustomer>();
-        //var user = queryer.GetUser("user00000001");
-        //if (user != null)
-        //    MessageBox.Success(user.Nickname);
-    }
+    //[RelayCommand]
+    //private void StartListening()
+    //{
+    //    //var queryer = _provider.GetRequiredService<DataQueryerForCustomer>();
+    //    //var user = queryer.GetUser("user00000001");
+    //    //if (user != null)
+    //    //    MessageBox.Success(user.Nickname);
+    //}
 
     /// <summary>
-    /// 每隔一秒，该方法会线程独立地自动刷新用户信息
+    /// 刷新信息已读数
     /// </summary>
-    public void RefreshUserInfo()
+    public void RefreshUnread()
     {
-        if (CurrentUserInfo != null)
-        {
-            UserCenter userCenter = _provider.GetRequiredService<UserCenter>();
-            CurrentUserInfo = userCenter.GetCurrentUserInfo();
-            var _queryer = _provider.GetRequiredService<DataQueryerForCustomer>();
-            var msgs = _queryer.GetChats(userCenter.CurrentUser);
-            if (msgs != null)
+        Unreads = 0;
+        if (Chats != null)
+            foreach(var c in Chats)
             {
-                Chats.Clear();
-                Unreads = 0;
-                foreach (var c in msgs)
-                {
-                    var cvm = ChatListVM.Create(c, _provider, userCenter.CurrentUser);
-                    Chats.Add(cvm);
-                    foreach (var ms in c.Messages)
+                foreach(var ms in c.Messages)
+                    if (ms.Unread == 0)
                     {
-                        if (ms.Unread == 0)
-                        {
-                            Unreads++;
-                        }
-
+                        Unreads++;
                     }
-                    //if (c.SellerId == CurrentUserInfo.Id)
-                    //{
+            }
+    }
+    public void RefreshMessage()
+    {
+        UserCenter userCenter = _provider.GetRequiredService<UserCenter>();
+        var msgCenter = _provider.GetRequiredService<MessageCenter>();
+        var msgs = msgCenter.GetChats(userCenter.CurrentUser);
+        if (msgs != null)
+        {
+            Chats.Clear();
+            //注意此处整合了RefreshUnread的功能
+            Unreads = 0;
+            foreach (var c in msgs)
+            {
+                var cvm = ChatListVM.Create(c, _provider, userCenter.CurrentUser);
+                Chats.Add(cvm);
+                foreach (var ms in c.Messages)
+                {
+                    if (ms.Unread == 0)
+                    {
+                        Unreads++;
+                    }
 
-                    //}
-                    //else
-                    //{
-
-                    //}
                 }
             }
         }
-       
-            //Task.Run(() =>
-            //{
-            //    while (true)
-            //    {
+    }
 
-            //        Thread.Sleep(3000);
-            //    }
-            //});
+    /// <summary>
+    /// 该方法刷新用户信息和其他UI信息
+    /// </summary>
+    public void RefreshUserInfo()
+    {
+        try
+        {
+            isChatting = false;
+            //刷新用户信息
+            UserCenter userCenter = _provider.GetRequiredService<UserCenter>();
+            if (CurrentUserInfo != null)
+            {
+                CurrentUserInfo = userCenter.GetCurrentUserInfo();
+                CurrentMoney = userCenter.GetCurrentMoney();
+            }
+            RefreshMessage();
+            //刷新自上架商品信息
+            ItemsCollection.Clear();
+            var queryer = _provider.GetRequiredService<DataQueryerForCustomer>();
+            var items = queryer.GetItems(userCenter.CurrentUser);
+            if (items != null)
+                foreach (var i in items)
+                {
+                    var it = new ItemTobeSold(_provider);
+                    Utilities.Copy(i, it);
+                    if (it.ItemStatus == "DELISTED" || it.ItemStatus == "SOLD")
+                        it.SetDelisted();
+                    ItemsCollection.Add(it);
+                }
+
+            //刷新正在销售商品信息
+            SalesCollection.Clear();
+            var allItems = queryer.GetAllItems(userCenter.CurrentUser);
+            if (allItems != null)
+                foreach (var i in allItems)
+                {
+                    //自己出售的商品、状态不正常的商品不会出现在检索中
+                    if (i.SellerId != userCenter.CurrentUser.Id && i.ItemStatus == "ONSALE")
+                    {
+                        var it = new ItemSold(_provider);
+                        Utilities.Copy(i, it);
+                        it.SellerNickname = queryer.GetUser(it.SellerId, userCenter.CurrentUser)!.Nickname;
+                        SalesCollection.Add(it);
+                    }
+
+                }
+        }
+        catch (InvalidOperationException ex)
+        {
+            MessageBox.Error(ex.Message);
+            return;
+        }
         }
 
-    public void Filter(string filterType, string filterVal)
+    public void Filter(Func<IEnumerable<ItemSold>, IQueryable<ItemSold>> filterExpr)
     {
-        switch(filterType)
+        //调用传入的过滤表达式，执行过滤
+        //这操作可实现多重过滤
+        var filteredByType = filterExpr.Invoke(SalesCollection).ToArray();
+        if (filteredByType.Length > 0)
         {
-            case "type":
-                {
-                    var filteredByType = ItemsCollection.Where(i => i.Type.Contains(filterVal))
-                        .Select(i => i);
-                    if(filteredByType.Any())
-                    {
-                        ItemsCollection.Clear();
-                        foreach(var i in filteredByType)
-                            ItemsCollection.Add(i);
-                        Growl.Info($"共查找出{ItemsCollection.Count}件商品.");
-                    }
-                    else
-                    {
-                        Growl.Error("没有符合条件的商品.");
-                    }
-                    break;
-                }
-                //清除所有筛选条件
-            case "default":
-                {
-                    ItemsCollection.Clear();
-                    UserCenter userCenter2 = _provider.GetRequiredService<UserCenter>();
-                    var queryer = _provider.GetRequiredService<DataQueryerForCustomer>();
-                    var items = queryer.GetItems(userCenter2.CurrentUser);
-                    if (items != null)
-                        foreach (var i in items)
-                        {
-                            var it = new ItemTobeSold(_provider);
-                            Utilities.Copy(i, it);
-                            ItemsCollection.Add(it);
-                        }
-                    break;
-                }
+            var newList = new ObservableCollection<ItemSold>();
+            SalesCollection.Clear();
+            foreach (var i in filteredByType)
+                newList.Add(i);
+            Growl.Info($"共查找出{newList.Count}件商品.");
+            SalesCollection = newList;
+        }
+        else
+        {
+            Growl.Error("没有符合条件的商品.");
         }
     }
+
+    public void ClearFilter()
+    {
+        //清除所有筛选条件
+        SalesCollection.Clear();
+        UserCenter userCenter2 = _provider.GetRequiredService<UserCenter>();
+        var queryer = _provider.GetRequiredService<DataQueryerForCustomer>();
+        var items = queryer.GetAllItems(userCenter2.CurrentUser);
+        if (items != null)
+            foreach (var i in items)
+            {
+                var it = new ItemSold(_provider);
+                Utilities.Copy(i, it);
+                SalesCollection.Add(it);
+            }
+    }
+
 
     [RelayCommand]
     private void LoadSpecificPage(object sender)
@@ -168,81 +220,6 @@ public partial class MainVM : ObservableObject
             return;
         if (sender is HandyControl.Controls.TabControl tabControl)
         {
-            
-
-            switch (tabControl.SelectedIndex)
-            {
-                case 0:
-                    {
-                        isChatting = false;
-                        break;
-                    }
-                //切换到第1页，需要刷新商品信息
-                case 1:
-                    {
-                        try
-                        {
-                            isChatting = false;
-                            UserCenter userCenter2 = _provider.GetRequiredService<UserCenter>();
-
-                            ItemsCollection.Clear();
-                            var queryer = _provider.GetRequiredService<DataQueryerForCustomer>();
-                            var items = queryer.GetItems(userCenter2.CurrentUser);
-                            if (items != null)
-                                foreach (var i in items)
-                                {
-                                    var it = new ItemTobeSold(_provider);
-                                    Utilities.Copy(i, it);
-                                    ItemsCollection.Add(it);
-                                }
-                            break;
-                        }
-                        catch (InvalidOperationException ex)
-                        {
-                            MessageBox.Error(ex.Message);
-                            return;
-                        }
-                    }
-                case 2:
-                    {
-                        try
-                        {
-                            isChatting = false;
-                            SalesCollection.Clear();
-                            UserCenter userCenter1 = _provider.GetRequiredService<UserCenter>();
-                            var queryer = _provider.GetRequiredService<DataQueryerForCustomer>();
-                            var items = queryer.GetAllItems(userCenter1.CurrentUser);
-                            if (items != null)
-                                foreach (var i in items)
-                                {
-                                    //自己出售的商品、状态不正常的商品不会出现在检索中
-                                    if(i.SellerId != userCenter1.CurrentUser.Id && i.ItemStatus == "ONSALE")
-                                    {
-                                        var it = new ItemSold(_provider);
-                                        Utilities.Copy(i, it);
-                                        it.SellerNickname = queryer.GetUser(it.SellerId, userCenter1.CurrentUser)!.Nickname;
-                                        SalesCollection.Add(it);
-                                    }
-
-                                }
-                            break;
-                        }
-                        catch (InvalidOperationException ex)
-                        {
-                            MessageBox.Error(ex.Message);
-                            return;
-                        }
-                    }
-                case 3:
-                        //if(unreadCount > 0 )
-                        //{
-                        //    Growl.Info($"您有{unreadCount}条未读消息.");
-                        //}
-                    break;
-                default:
-                    isChatting = false;
-                    break;
-            }
             RefreshUserInfo();
         }
     }
@@ -266,34 +243,41 @@ public partial class MainVM : ObservableObject
                 var queryer = _provider.GetRequiredService<DataQueryerForCustomer>();
                 var item = new Item();
                 Utilities.Copy(it, item);
-                queryer.AddItem(item, userCenter.CurrentUser);
+                if(queryer.AddItem(item, userCenter.CurrentUser))
+                {
+                    Growl.Success("上架商品成功!");
+                }
             }
         }
     }
 
+    ///// <summary>
+    /////
+    ///// </summary>
+    //[RelayCommand]
+    //private void ListAllItem()
+    //{
+    //    UserCenter userCenter = _provider.GetRequiredService<UserCenter>();
+    //    var queryer = _provider.GetRequiredService<DataQueryerForCustomer>();
+
+    //    var users = queryer.GetAllUsers(userCenter.CurrentUser);
+    //    //if (ItemsCollection.Count > 0)
+    //    //{
+    //    //    foreach (var i in ItemsCollection)
+    //    //    {
+    //    //        var item = new Item();
+    //    //        Utilities.Copy(i, item);
+    //    //        UserCenter userCenter = _provider.GetRequiredService<UserCenter>();
+    //    //        var queryer = _provider.GetRequiredService<DataQueryerForCustomer>();
+    //    //        queryer.AddItem(item, userCenter.CurrentUser);
+    //    //    }
+    //    //}
+    //}
+
     /// <summary>
-    ///
+    /// 加载与特定用户的对话记录，并自动设置信息已读
     /// </summary>
-    [RelayCommand]
-    private void ListAllItem()
-    {
-        UserCenter userCenter = _provider.GetRequiredService<UserCenter>();
-        var queryer = _provider.GetRequiredService<DataQueryerForCustomer>();
-
-        var users = queryer.GetAllUsers(userCenter.CurrentUser);
-        //if (ItemsCollection.Count > 0)
-        //{
-        //    foreach (var i in ItemsCollection)
-        //    {
-        //        var item = new Item();
-        //        Utilities.Copy(i, item);
-        //        UserCenter userCenter = _provider.GetRequiredService<UserCenter>();
-        //        var queryer = _provider.GetRequiredService<DataQueryerForCustomer>();
-        //        queryer.AddItem(item, userCenter.CurrentUser);
-        //    }
-        //}
-    }
-
+    /// <param name="sender"></param>
     [RelayCommand]
     private void LoadMsgOfChats(object sender)
     {
@@ -302,14 +286,17 @@ public partial class MainVM : ObservableObject
             if (listbox.SelectedIndex == -1)
                 return;
             isChatting = true;
+            UserCenter userCenter = _provider.GetRequiredService<UserCenter>();
+            var msgCenter = _provider.GetRequiredService<MessageCenter>();
             CurrentMessages.Clear();
             var currentChat = Chats[listbox.SelectedIndex];
             foreach(var m in currentChat.Messages)
             {
                 m.Unread = 1;
-                Unreads--;
+                msgCenter.SetMessageRead(m.MsgId, userCenter.CurrentUser);
                 CurrentMessages.Add(m);
             }
+            RefreshUnread();
         }
     }
 
@@ -321,7 +308,7 @@ public partial class MainVM : ObservableObject
     {
         try
         {
-            MsgVM msg = new(_provider)
+            MsgVM msgModel = new(_provider)
             {
                 Unread = 0,
                 SenderId = CurrentUserInfo.Id,
@@ -330,14 +317,15 @@ public partial class MainVM : ObservableObject
                 Timestamp = DateTime.Now,
                 Content = MsgContent,
                 MsgId = "MSG-" + Guid.NewGuid().ToString()[..12]
-            }
-            ;
-            Message msgModel = new();
-            Utilities.Copy(msg, msgModel);
-            CurrentMessages.Add(msg);
+            };
             var queryer = _provider.GetRequiredService<DataQueryerForCustomer>();
             UserCenter userCenter = _provider.GetRequiredService<UserCenter>();
-            queryer.AddMessage(msgModel, userCenter.CurrentUser);
+
+            var msgCenter = _provider.GetRequiredService<MessageCenter>();
+            Message msg = msgCenter.SendMessage(MsgContent, CurrentMessages.First().ChatId, userCenter.CurrentUser);
+            //Utilities.Copy(msgModel, msg);
+            CurrentMessages.Add(msgModel);
+            //msgCenter.SendMessage(MsgContent, msg.ChatId, userCenter.CurrentUser);
             MsgContent = string.Empty;
 
 
@@ -355,12 +343,12 @@ public partial class MainVM : ObservableObject
         var queryer = _provider.GetRequiredService<DataQueryerForCustomer>();
         UserCenter userCenter = _provider.GetRequiredService<UserCenter>();
         
-
         var saleList = queryer.GetSales(userCenter.CurrentUser);
         if(saleList != null && saleOperateVM is SaleOperateVM vm)
         {
-            vm.ImportSales(saleList);
-
+            vm.ImportSales(saleList, false);
+            saleList = null;
+            GC.Collect();
             saleWindow.Show();
         }
 
@@ -369,18 +357,37 @@ public partial class MainVM : ObservableObject
     [RelayCommand]
     private void SearchCurrentSales()
     {
+        var saleWindow = _provider.GetRequiredService<SaleOperateWindow>();
+        var saleOperateVM = saleWindow.DataContext as SaleOperateVM;
+        var queryer = _provider.GetRequiredService<DataQueryerForCustomer>();
+        UserCenter userCenter = _provider.GetRequiredService<UserCenter>();
+
+        var saleList = queryer.GetSales(userCenter.CurrentUser);
+        if(saleList != null)
+        {
+            var list2 = saleList.Where(S => S.Status != SaleStatus.Success.ToString("F") && !(S.Status.Contains("Closed")))
+            .Select(s => s).ToArray();
+            if (list2 != null && saleOperateVM is SaleOperateVM vm)
+            {
+                vm.ImportSales(list2,false);
+
+                saleWindow.Show();
+            }
+        }
+
 
     }
 
     [RelayCommand]
     private void ModifyUserInfo()
     {
+        RegisterWindow regiWindow = _provider.GetRequiredService<RegisterWindow>();
+        var vm = regiWindow.DataContext as RegisterVM;
+        vm?.ModifyUser(CurrentUserInfo);
 
-    }
-
-    [RelayCommand]
-    private void ModifyPwd()
-    {
-
+        if (regiWindow.ShowDialog() == true)
+        {
+            MessageBox.Success("用户信息修改成功.");
+        }
     }
 }

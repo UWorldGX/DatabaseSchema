@@ -6,71 +6,177 @@
         xmlns:hc="https://handyorg.github.io/handycontrol"
         xmlns:local="clr-namespace:FirewallDemo.View"
         mc:Ignorable="d"
-        Title="SaleOperateWindow" Height="450" Width="800">
+        Title="管理交易信息" Height="450" Width="650">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="35"/>
             <RowDefinition Height="35"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
         <TextBlock
             Style="{StaticResource TextBlockTitle}"
             Text="交易一览"/>
-        <hc:Pagination MaxPageCount="10" PageIndex="{Binding PageIndex}" IsJumpEnabled="True">
-            <hc:Interaction.Triggers>
-                <hc:EventTrigger EventName="PageUpdated">
-                    <hc:EventToCommand Command="{Binding PageUpdateCommand}" PassEventArgsToCommand="True" />
-                </hc:EventTrigger>
-            </hc:Interaction.Triggers>
-        </hc:Pagination>
-        <DataGrid IsReadOnly="False" MaxWidth="600" Grid.Row="2"
-                  HeadersVisibility="All" RowHeaderWidth="60"
-                  AutoGenerateColumns="False" ItemsSource="{Binding Sales}">
-            <DataGrid.RowHeaderTemplate>
+        <ListBox
+            Grid.Row="1"
+            ItemsSource="{Binding Sales}"
+            Style="{StaticResource ListBoxCustom}"
+            SelectionMode="Single">
+            <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <CheckBox IsChecked="{Binding IsSelected,RelativeSource={RelativeSource AncestorType=DataGridRow}}"/>
+                    <Border Effect="{StaticResource EffectShadow2}"
+                            Background="{StaticResource RegionBrush}"
+                            Margin="5"
+                            hc:BorderElement.CornerRadius="10"
+                            Height="70" Width="600">
+                        <hc:SimpleStackPanel
+                            Orientation="Horizontal"
+                            Width="590">
+                            <TextBlock Text="{Binding Item.ItemName}"
+                                       TextWrapping="WrapWithOverflow"
+                                       TextAlignment="Left"
+                                       VerticalAlignment="Center"
+                                       Width="80"/>
+                            <hc:SimpleStackPanel
+                                Orientation="Vertical"
+                                Width="180"
+                                VerticalAlignment="Center">
+
+                                <TextBlock
+                                    Text="{Binding Timestamp, StringFormat={}{0:yyyy年MM月dd日 HH:mm}}"
+                                    Style="{StaticResource TextBlockDefault}"/>
+                                <hc:NumericUpDown
+                                    Increment="0.01"
+                                    Style="{StaticResource NumericUpDownExtend}"
+                                    Value="{Binding RealPrice, Mode=TwoWay}"/>
+                                <TextBlock Text="{Binding SellerNickname}"
+                                           FontStyle="Italic"/>
+                            </hc:SimpleStackPanel>
+                            <TextBlock Text="{Binding Item.Type}"
+                                       Style="{StaticResource TextBlockDefaultThiLight}"/>
+                            <TextBlock Text="{Binding Status}"
+                                       Margin="5"
+                                       Style="{StaticResource TextBlockDefault}"/>
+                            <hc:ButtonGroup
+                                Visibility="{Binding IsAdmin, Converter={StaticResource Boolean2VisibilityReConverter}}"
+                                IsEnabled="{Binding IsOperatable}"
+                                VerticalAlignment="Center"
+                                Layout="Uniform"
+                                Style="{StaticResource ButtonGroupSolid}">
+                                <Button
+                                    Style="{StaticResource ButtonWarning}"
+                                    Content="同意"
+                                    Command="{Binding AcceptSaleCommand}"/>
+                                <Button
+                                    Style="{StaticResource ButtonDanger}"
+                                    Content="拒绝"
+                                    Command="{Binding RejectSaleCommand}"/>
+                            </hc:ButtonGroup>
+                            <!--<hc:SplitButton
+                            Visibility="{Binding IsAdmin, Converter={StaticResource Boolean2VisibilityReConverter}}"
+                            IsEnabled="{Binding IsOperatable}"
+                            Content="同意"
+                            Width="90"
+                            Command="{Binding AcceptSaleCommand}">
+                            <hc:SplitButton.DropDownContent>
+                            <StackPanel
+                            Width="80">
+                            <MenuItem
+                            Padding="0.5"
+                            BorderThickness="0"
+                            Header="拒绝" Command="{Binding RejectSaleCommand}"/>
+                            </StackPanel>
+                            </hc:SplitButton.DropDownContent>
+                            </hc:SplitButton>-->
+                            <hc:ButtonGroup
+                                Visibility="{Binding IsAdmin, Converter={StaticResource Boolean2VisibilityConverter}}"
+                                Layout="Uniform"
+                                Style="{StaticResource ButtonGroupSolid}"
+                                VerticalAlignment="Center">
+                                <Button
+                                    Style="{StaticResource ButtonWarning}"
+                                    Content="警告"
+                                    Command="{Binding WarnSaleCommand}"/>
+                                <Button
+                                    Style="{StaticResource ButtonDanger}"
+                                    Content="下架"
+                                    Command="{Binding ForceDelistSaleCommand}"/>
+                            </hc:ButtonGroup>
+                            <!--<hc:SplitButton
+                            Visibility="{Binding IsAdmin, Converter={StaticResource Boolean2VisibilityConverter}}"
+                            Content="同意"
+                            Width="90"
+                            Command="{Binding AcceptSaleCommand}">
+                            <hc:SplitButton.DropDownContent>
+                            <StackPanel
+                            Width="80">
+                            <MenuItem
+                            Padding="0.5"
+                            BorderThickness="0"
+                            Header="拒绝" Command="{Binding RejectSaleCommand}"/>
+                            </StackPanel>
+                            </hc:SplitButton.DropDownContent>
+                            </hc:SplitButton>-->
+                        </hc:SimpleStackPanel>
+                    </Border>
                 </DataTemplate>
-            </DataGrid.RowHeaderTemplate>
-            <DataGrid.Columns>
-                <DataGridTextColumn IsReadOnly="True" Width="80" CanUserResize="False" Binding="{Binding SellerId}" Header="卖家"/>
-                <DataGridTextColumn IsReadOnly="True" Binding="{Binding Item.ItemName}" Header="商品名"/>
-                <DataGridTemplateColumn Width="60" CanUserResize="False">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <hc:NumericUpDown
-                                hc:InfoElement.TitlePlacement="Left"
-                                hc:InfoElement.TitleWidth="50"
-                                hc:TitleElement.Title="实价"
-                                Increment="1"
-                                Style="{StaticResource NumericUpDownExtend}"
-                                Value="{Binding RealPrice}"/>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                <DataGridTextColumn IsReadOnly="True" Binding="{Binding TimeStamp, StringFormat={}{0:yyyy年MM月dd日 HH:mm}}" Header="创建时间"/>
-                <!--<DataGridCheckBoxColumn Width="100" CanUserResize="False" Binding="{Binding IsSelected}" Header="{ex:Lang Key={x:Static langs:LangKeys.Selected}}"/>-->
-                <!--<DataGridComboBoxColumn ItemsSource="{Binding Source={StaticResource DemoTypes}}" Width="100" CanUserResize="False" SelectedValueBinding="{Binding Type}" Header="{ex:Lang "/>-->
-                <DataGridTextColumn IsReadOnly="True" Binding="{Binding Status}" Header="状态"/>
-                <DataGridTemplateColumn Width="60" CanUserResize="False">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <hc:SplitButton
-                                Content="同意"
-                                Command="{Binding AcceptSaleCommand}">
-                                <hc:SplitButton.DropDownContent>
-                                    <StackPanel
-                                        Width="80">
-                                        <MenuItem
-                                            Padding="0.5"
-                                            BorderThickness="0"
-                                            Header="拒绝" Command="{Binding RejectSaleCommand}"/>
-                                    </StackPanel>
-                                </hc:SplitButton.DropDownContent>
-                            </hc:SplitButton>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-            </DataGrid.Columns>
-        </DataGrid>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <!--<hc:Pagination MaxPageCount="{Binding PageSize}" PageIndex="{Binding PageIndex}" IsJumpEnabled="True">
+        <hc:Interaction.Triggers>
+        <hc:EventTrigger EventName="PageUpdated">
+        <hc:EventToCommand Command="{Binding PageUpdateCommand}" PassEventArgsToCommand="True" />
+        </hc:EventTrigger>
+        </hc:Interaction.Triggers>
+        </hc:Pagination>
+        <DataGrid IsReadOnly="False" MaxWidth="850" Grid.Row="2"
+        HeadersVisibility="All" RowHeaderWidth="60"
+        AutoGenerateColumns="False" ItemsSource="{Binding Sales}">
+        <DataGrid.RowHeaderTemplate>
+        <DataTemplate>
+        <CheckBox IsChecked="{Binding IsSelected,RelativeSource={RelativeSource AncestorType=DataGridRow}}"/>
+        </DataTemplate>
+        </DataGrid.RowHeaderTemplate>
+        <DataGrid.Columns>
+        <DataGridTextColumn IsReadOnly="True" Width="80" CanUserResize="False" Binding="{Binding SellerId}" Header="卖家"/>
+        <DataGridTextColumn IsReadOnly="True" Binding="{Binding Item.ItemName}" Header="商品名"/>
+        <DataGridTemplateColumn Width="100" CanUserResize="False" Header="实价"
+        IsReadOnly="False">
+        <DataGridTemplateColumn.CellTemplate>
+        <DataTemplate>
+        <hc:NumericUpDown
+        Increment="0.01"
+        Style="{StaticResource NumericUpDownExtend}"
+        Value="{Binding RealPrice, Mode=TwoWay}"/>
+        </DataTemplate>
+        </DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+        <DataGridTextColumn
+        Width="160" IsReadOnly="True"
+        Binding="{Binding Timestamp, StringFormat={}{0:yyyy年MM月dd日 HH:mm}}"
+        Header="创建时间"/>
+        --><!--<DataGridCheckBoxColumn Width="100" CanUserResize="False" Binding="{Binding IsSelected}" Header="{ex:Lang Key={x:Static langs:LangKeys.Selected}}"/>-->
+        <!--<DataGridComboBoxColumn ItemsSource="{Binding Source={StaticResource DemoTypes}}" Width="100" CanUserResize="False" SelectedValueBinding="{Binding Type}" Header="{ex:Lang "/>--><!--
+        <DataGridTextColumn IsReadOnly="True" Binding="{Binding Status}" Header="状态"/>
+        <DataGridTemplateColumn Width="130" CanUserResize="False" Header="操作">
+        <DataGridTemplateColumn.CellTemplate>
+        <DataTemplate>
+        <hc:SplitButton
+        Content="同意"
+        Width="90"
+        Command="{Binding AcceptSaleCommand}">
+        <hc:SplitButton.DropDownContent>
+        <StackPanel
+        Width="80">
+        <MenuItem
+        Padding="0.5"
+        BorderThickness="0"
+        Header="拒绝" Command="{Binding RejectSaleCommand}"/>
+        </StackPanel>
+        </hc:SplitButton.DropDownContent>
+        </hc:SplitButton>
+        </DataTemplate>
+        </DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+        </DataGrid.Columns>
+        </DataGrid>-->
     </Grid>
 </Window>

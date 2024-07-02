@@ -40,23 +40,28 @@ public class RegisterManager(IServiceProvider serviceProvider) : IRegisterManage
         {
             throw new InvalidOperationException("不允许使用低权限用户进行用户注册操作.");
         }
-        try
-        {
+        using var serviceScope = _provider.CreateScope();
+        using var dataContext = serviceScope.ServiceProvider.GetRequiredService<xpertContext>();
+
+        //var exists = dataContext.Users.Where(u => u.Id == userInfo.Id).Select(u => u);
+        //if(exists != null)
+        //{
+        //    throw new InvalidOperationException("用户已存在.");
+        //}
+
             User user = new()
             {
                 Age = userInfo.Age,
             Name = userInfo.Name,
             Sex = userInfo.Sex,
             Nickname = userInfo.Nickname,
-            Money = 1200,
+            Money = 1500,
             Password = password
             };
             //生成用户公钥
             RSA rsa = RSA.Create();
             user.PublicKey = Convert.ToBase64String(rsa.ExportRSAPublicKey());
 
-            using var serviceScope = _provider.CreateScope();
-            using var dataContext = serviceScope.ServiceProvider.GetRequiredService<xpertContext>();
 
             var userCount = (from u in dataContext.Users.AsParallel() select u).Count();
             user.Id = "user" + (userCount + 1).ToString("D8");
@@ -70,12 +75,5 @@ public class RegisterManager(IServiceProvider serviceProvider) : IRegisterManage
              UserId = user.Id};
             dataContext.UserPrivkeys.Add(privkey);
             dataContext.SaveChanges();
-
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Error(ex.Message);
-            return;
-        }
     }
 }

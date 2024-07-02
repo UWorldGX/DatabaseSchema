@@ -72,4 +72,18 @@ public class UserCenter
         Utilities.Copy(CurrentUser, result);
         return result;
     }
+
+    public int GetCurrentMoney()
+    {
+        using var serviceScope = _serviceProvider.CreateScope();
+        using var dataContext = serviceScope.ServiceProvider.GetRequiredService<xpertContext>();
+
+        var user = (from u in dataContext.Users
+                   where u.Id == CurrentUser.Id
+                   select u).SingleOrDefault();
+        if (user != null)
+            return user.Money;
+        else
+            return -1;
+    }
 }

@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using FirewallDemo.ViewModel.EntityVM;
 using HandyControl.Controls;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,16 +39,47 @@ public partial class FilterVM(IServiceProvider provider) : ObservableObject
         if(sender is SearchBar searchBar)
         {
             var mainVM = _provider.GetRequiredService<MainVM>();
-            mainVM?.Filter("type", searchBar.Text);
+            var expr = (IEnumerable<ItemSold> items) => 
+            { return items.Where(i => i.Type.Contains(searchBar.Text)).AsQueryable(); } ;
+            mainVM?.Filter(expr);
         }
 
+    }
+
+    [RelayCommand]
+    private void FilterByPrice()
+    {
+        var mainVM = _provider.GetRequiredService<MainVM>();
+        var expr = (IEnumerable<ItemSold> items) =>
+        { return items.Where(i => i.SellPrice > SellPriceMin && i.SellPrice < SellPriceMax).AsQueryable(); };
+        mainVM?.Filter(expr);
+    }
+
+    [RelayCommand]
+    private void FilterByTime()
+    {
+        var mainVM = _provider.GetRequiredService<MainVM>();
+        var expr = (IEnumerable<ItemSold> items) =>
+        { return items.Where(i => i.ListingTimestamp > StartTime && i.ListingTimestamp < EndTime).AsQueryable(); };
+        mainVM?.Filter(expr);
     }
 
     [RelayCommand]
     private void ClearFilter()
     {
         var mainVM = _provider.GetRequiredService<MainVM>();
-        mainVM?.Filter("default", TypeFilter);
+        mainVM?.ClearFilter();
 
+    }
+
+
+    [RelayCommand]
+    private void VerifyTime()
+    {
+        if (StartTime - EndTime > TimeSpan.Zero)
+        {
+            MessageBox.Error("起始时间不能晚于结束时间!");
+            StartTime = EndTime.AddHours(-1);
+        }
     }
 }

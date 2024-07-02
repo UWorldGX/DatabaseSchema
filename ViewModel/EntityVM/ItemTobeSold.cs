@@ -43,6 +43,9 @@ public partial class ItemTobeSold(IServiceProvider provider) : ObservableObject
     private string itemStatus;
 
     [ObservableProperty]
+    private bool isDelisted;
+
+    [ObservableProperty]
     private DateTime listingTimestamp;
 
     [ObservableProperty]
@@ -79,7 +82,8 @@ public partial class ItemTobeSold(IServiceProvider provider) : ObservableObject
                 ItemName ??= Summary.Length > 15 ? Summary[..15] : Summary;
                 //并自动生成一部分信息
                 ItemStatus = "ONSALE";
-                ListingTimestamp = DateTime.Now;
+                //测试触发器自动更新
+                ListingTimestamp = DateTime.UtcNow;
                 var userCenter = _provider.GetRequiredService<UserCenter>();
                 SellerId = userCenter.GetCurrentUserInfo().Id;
 
@@ -95,6 +99,11 @@ public partial class ItemTobeSold(IServiceProvider provider) : ObservableObject
 
     }
 
+    public void SetDelisted()
+    {
+        IsDelisted = true;
+    }
+
     [RelayCommand]
     private void ModifyItem()
     {
@@ -105,13 +114,70 @@ public partial class ItemTobeSold(IServiceProvider provider) : ObservableObject
             var queryer = _provider.GetRequiredService<DataQueryerForCustomer>();
             var item = new Item();
             Utilities.Copy(this, item);
-            queryer.ModifyItem(item, userCenter.CurrentUser);
+            if(queryer.CheckItemStatus(item.ItemStatus) == Model.Data.ItemStatus.SOLD ||
+                queryer.CheckItemStatus(item.ItemStatus) == Model.Data.ItemStatus.DELISTED)
+                SetDelisted();
+            if(queryer.ModifyItem(item, userCenter.CurrentUser))
+                Growl.Success("商品编辑成功!");
+
+        }
+    }
+
+    /// <summary>
+    /// 下架商品。这个操作不会真正删除一条记录。
+    /// </summary>
+    [RelayCommand]
+    private void DelistItem()
+    {
+        try
+        {
+            UserCenter userCenter = _provider.GetRequiredService<UserCenter>();
+            if (ItemStatus == "DELISTED" || ItemStatus == "SOLD")
+            {
+                MessageBox.Error("该商品已下架.");
+                return;
+            }
+            var queryer = _provider.GetRequiredService<DataQueryerForCustomer>();
+            SetDelisted();
+            queryer.SetItemStatus(ItemId, Model.Data.ItemStatus.DELISTED, userCenter.CurrentUser);
+            Growl.Info("成功下架该商品.");
+            //刷新UI
+            var mainVM = _provider.GetRequiredService<MainVM>();
+            mainVM.RefreshUserInfo();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Error(ex.Message);
         }
     }
 
     [RelayCommand]
-    private void DelistItem()
+    private void RelistItem()
     {
-        //TODO:下架商品。需要在DataQueryer写逻辑。必须注意外键约束。这个操作不会真正删除一条记录。
+        try
+        {
+            if (ItemStatus == "ONSALE" || ItemStatus == "WARNED")
+            {
+                MessageBox.Error("该商品已上架.");
+                return;
+            }
+            if (ItemStatus == "SOLD")
+            {
+                MessageBox.Error("已售出商品不可重新上架.");
+                return;
+            }
+            UserCenter userCenter = _provider.GetRequiredService<UserCenter>();
+            var queryer = _provider.GetRequiredService<DataQueryerForCustomer>();
+            SetDelisted();
+            queryer.SetItemStatus(ItemId, Model.Data.ItemStatus.ONSALE, userCenter.CurrentUser);
+            Growl.Info("成功上架该商品.");
+            //刷新UI
+            var mainVM = _provider.GetRequiredService<MainVM>();
+            mainVM.RefreshUserInfo();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Error(ex.Message);
+        }
     }
 }

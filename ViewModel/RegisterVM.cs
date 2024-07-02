@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using FirewallDemo.Model.Data;
 using FirewallDemo.Model.UserManage;
 using FirewallDemo.Security;
+using FirewallDemo.Utility;
 using FirewallDemo.View;
 using HandyControl.Controls;
 using Microsoft.Extensions.DependencyInjection;
@@ -66,6 +67,7 @@ public partial class RegisterVM : ObservableObject
             var registerMgr = _provider.GetRequiredService<RegisterManager>();
             UserCenter userCenter = _provider.GetRequiredService<UserCenter>();
 
+
             registerMgr.RegisterUser(newUser, Password2, userCenter.InnerUser);
             MessageBox.Success("注册成功，请登录。", "提示");
             var registerWindow = _provider.GetRequiredService<RegisterWindow>();
@@ -74,6 +76,11 @@ public partial class RegisterVM : ObservableObject
         catch (ArgumentNullException argEx)
         {
             MessageBox.Error($"{argEx.ParamName}为空.", "错误");
+            return;
+        }
+        catch(InvalidOperationException iex)
+        {
+            MessageBox.Error($"{iex.Message}");
             return;
         }
 
@@ -87,6 +94,7 @@ public partial class RegisterVM : ObservableObject
     public void ModifyUser(UserInfo userInfo)
     {
         ArgumentNullException.ThrowIfNull(userInfo);
+        Utilities.Copy(userInfo, this);
     }
 
 }

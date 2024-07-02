@@ -30,8 +30,8 @@ public partial class App : Application
     //1 封装构造函数
     public App()
     {
-        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-        ServiceCollection services = new ServiceCollection();
+        //Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        ServiceCollection services = new();
         ConfigureServices(services);
         _serviceProvider = services.BuildServiceProvider();
     }
@@ -48,10 +48,14 @@ public partial class App : Application
         }, ServiceLifetime.Scoped);
         //程序内用户和当前用户管理器
         services.AddScoped<UserCenter>();
+        //消息服务
+        services.AddScoped<MessageCenter>();
         //公钥基础设施
         services.AddTransient<PKI>();
         //商品过滤VM
         services.AddScoped<FilterVM>();
+        //管理员看板VM
+        services.AddScoped<AdminOperateVM>();
         //主窗口
         services.AddSingleton<MainVM>();
         services.AddScoped<MainWindow>();
@@ -71,6 +75,7 @@ public partial class App : Application
         services.AddTransient<DataQueryerForCustomer>();
         //为管理员使用的查询类
         services.AddTransient<DataQueryerForAdmin>();
+        //预留日志组件
         services.AddLogging(logBuilder =>
         {
             logBuilder.AddNLog();

@@ -31,6 +31,7 @@ public partial class Sale
 public enum SaleStatus
 {
     WaitingforSeller,
+    WaitingforBuyer,
     Success,
     ClosedByCustomer,
     ClosedBySeller,

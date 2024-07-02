@@ -30,6 +30,16 @@ public partial class ChatListVM(IServiceProvider provider) : ObservableObject
     [ObservableProperty]
     private UserInfo targetUser;
 
+    [ObservableProperty]
+    private bool isCurrent;
+
+    /// <summary>
+    /// 创建一个ChatListVM
+    /// </summary>
+    /// <param name="chatList"></param>
+    /// <param name="serviceProvider"></param>
+    /// <param name="caller"></param>
+    /// <returns></returns>
     public static ChatListVM Create(ChatList chatList, IServiceProvider serviceProvider, User caller)
     {
         ChatListVM vm = new(serviceProvider);

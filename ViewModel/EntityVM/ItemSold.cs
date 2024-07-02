@@ -59,12 +59,18 @@ public partial class ItemSold(IServiceProvider provider) : ObservableObject
         {
             UserCenter userCenter = _provider.GetRequiredService<UserCenter>();
             var queryer = _provider.GetRequiredService<DataQueryerForCustomer>();
+            var msgCenter = _provider.GetRequiredService<MessageCenter>();
             var pki = _provider.GetRequiredService<PKI>();
+            //用户余额不足则不允许购买
+            if(userCenter.CurrentUser.Money < SellPrice)
+            {
+                Growl.ErrorGlobal("啊呀! 余额不够......");
+                return;
+            }
 
             //新建一条销售记录，设置各项信息
             Sale sale = new()
             {
-                SaleId = "SL-" + Guid.NewGuid().ToString()[..12],
                 ItemId = this.ItemId,
                 CustomerId = userCenter.CurrentUser.Id,
                 SellerId = this.SellerId,
@@ -72,34 +78,36 @@ public partial class ItemSold(IServiceProvider provider) : ObservableObject
                 Timestamp = DateTime.Now,
                 Status = SaleStatus.WaitingforSeller.ToString("F")
             };
-            ChatList chatList = new()
-            {
-                SellerId = this.SellerId,
-                CustomerId = userCenter.CurrentUser.Id,
-                ChatId = "SL-" + Guid.NewGuid().ToString()[..12]
-            };
-            Message msg = new()
-            {
-                Content = "我要买下您的宝贝，等待您的回复.",
-                Unread = 0,
-                SenderId = userCenter.CurrentUser.Id,
-                ChatId = chatList.ChatId,
-                Timestamp = sale.Timestamp,
-                MsgId = "MSG-" + Guid.NewGuid().ToString()[..12]
-            }; 
+            //{
+            //    Content = "我要买下您的宝贝，等待您的回复.",
+            //    Unread = 0,
+            //    SenderId = userCenter.CurrentUser.Id,
+            //    ChatId = chatList.ChatId,
+            //    Timestamp = sale.Timestamp,
+            //    MsgId = "MSG-" + Guid.NewGuid().ToString()[..12]
+            //}; 
 
             //修改原有item状态: 售出下架
             Item item = new();
             Utilities.Copy(this, item);
             item.DelistingTimestamp = DateTime.Now;
             item.ItemStatus = "SOLD";
-            queryer.ModifyItem(item, userCenter.CurrentUser);
-            queryer.AddSale(sale, userCenter.CurrentUser);
-            queryer.AddChat(chatList, userCenter.CurrentUser);
-            queryer.AddMessage(msg, userCenter.CurrentUser);
+            if(queryer.ModifyItem(item, userCenter.CurrentUser))
+            {
+                if (queryer.AddSale(sale, userCenter.CurrentUser))
+                {
+                    ChatList chatList = msgCenter.CreateChat(SellerId, "customer", userCenter.CurrentUser);
+                    Message msg = msgCenter.SendMessage("我要买下您的宝贝，等待您的回复.", chatList.ChatId, userCenter.CurrentUser);
 
-            Growl.Success("已发送请求，等待卖家回复.");
-            //TODO: 发出信息，刷新商品列表
+
+                    MessageBox.Success("已发送请求，等待卖家回复.");
+                    //刷新UI
+                    var mainVm = _provider.GetRequiredService<MainVM>();
+                    mainVm.RefreshUserInfo();
+                }
+            }
+
+            
         }
         catch (Exception ex)
         {
@@ -107,15 +115,18 @@ public partial class ItemSold(IServiceProvider provider) : ObservableObject
         }
     }
 
-    [RelayCommand]
-    private void ChatToSeller()
-    {
-        try
-        {
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Error(ex.Message);
-        }
-    }
+    /// <summary>
+    /// 未使用的方法，作为快捷与上架聊天的预留
+    /// </summary>
+    //[RelayCommand]
+    //private void ChatToSeller()
+    //{
+    //    try
+    //    {
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        MessageBox.Error(ex.Message);
+    //    }
+    //}
 }

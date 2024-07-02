@@ -5,9 +5,12 @@ using System.Collections.Generic;
 
 namespace FirewallDemo.Model.Data;
 
+
 public partial class UserPrivkey
 {
     public string UserId { get; set; }
 
     public string PrivateKey { get; set; }
+
+    public virtual User User { get; set; }
 }

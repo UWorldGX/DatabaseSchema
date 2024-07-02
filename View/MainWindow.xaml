@@ -116,7 +116,10 @@
                                                 Foreground="OrangeRed"
                                                 FontSize="24"
                                                 FontWeight="Bold"/>
-
+                                            <Label
+                                                Style="{StaticResource LabelWarning.Small}"
+                                                Content="已下架"
+                                                Visibility="{Binding IsDelisted, Converter={StaticResource Boolean2VisibilityConverter}}"/>
                                         </hc:SimpleStackPanel>
                                     </hc:SimpleStackPanel>
 
@@ -130,9 +133,12 @@
                                             <StackPanel
                                                 Width="80">
                                                 <MenuItem
-                                                    Padding="0.5"
-                                                    BorderThickness="0"
+                                                    Visibility="{Binding IsDelisted, Converter={StaticResource Boolean2VisibilityReConverter}}"
                                                     Header="下架" Command="{Binding DelistItemCommand}"/>
+                                                <MenuItem
+                                                    Visibility="{Binding IsDelisted, Converter={StaticResource Boolean2VisibilityConverter}}"
+                                                    Header="重新上架" Command="{Binding RelistItemCommand}"/>
+
                                             </StackPanel>
                                         </hc:SplitButton.DropDownContent>
                                     </hc:SplitButton>
@@ -151,10 +157,10 @@
                         Content="上架商品"
                         Command="{Binding AddItemtobeSoldCommand}"
                         Style="{StaticResource ButtonPrimary}"/>
-                    <Button
-                        Content="Test for view"
-                        Command="{Binding ListAllItemCommand}"
-                        Style="{StaticResource ButtonSuccess}"/>
+                    <!--<Button
+                    Content="Test for view"
+                    Command="{Binding ListAllItemCommand}"
+                    Style="{StaticResource ButtonSuccess}"/>-->
                 </hc:UniformSpacingPanel>
             </Grid>
         </hc:TabItem>
@@ -186,7 +192,6 @@
                                     <TextBlock
                                         Text="过滤选项..." Style="{StaticResource TextBlockTitle}"
                                         HorizontalAlignment="Left"/>
-
                                     <hc:SearchBar
                                         CommandParameter="{Binding RelativeSource={RelativeSource Self}}"
                                         Command="{Binding FilterByTypeCommand}"
@@ -198,26 +203,32 @@
                                         Margin="5"
                                         />
 
-                                    <hc:ElementGroup
-                                        Layout="Stack"
-                                        Orientation="Horizontal"
-                                        HorizontalContentAlignment="Stretch"
-                                        Style="{StaticResource ElementGroupSolid}">
-                                        <hc:NumericUpDown
-                                            hc:InfoElement.TitlePlacement="Left"
-                                            hc:InfoElement.TitleWidth="50"
-                                            hc:TitleElement.Title="最低价"
-                                            Increment="1"
-                                            Style="{StaticResource NumericUpDownExtend}"
-                                            Value="{Binding SellPriceMin}"/>
-                                        <hc:NumericUpDown
-                                            hc:InfoElement.TitlePlacement="Left"
-                                            hc:InfoElement.TitleWidth="50"
-                                            hc:TitleElement.Title="最高价"
-                                            Increment="1"
-                                            Style="{StaticResource NumericUpDownExtend}"
-                                            Value="{Binding SellPriceMax}"/>
-                                    </hc:ElementGroup>
+                                    <hc:SimpleStackPanel>
+                                        <hc:ElementGroup
+                                            Layout="Stack"
+                                            Orientation="Horizontal"
+                                            HorizontalContentAlignment="Stretch"
+                                            Style="{StaticResource ElementGroupSolid}">
+                                            <hc:NumericUpDown
+                                                hc:InfoElement.TitlePlacement="Left"
+                                                hc:InfoElement.TitleWidth="50"
+                                                hc:TitleElement.Title="最低价"
+                                                Increment="1"
+                                                Style="{StaticResource NumericUpDownExtend}"
+                                                Value="{Binding SellPriceMin}"/>
+                                            <hc:NumericUpDown
+                                                hc:InfoElement.TitlePlacement="Left"
+                                                hc:InfoElement.TitleWidth="50"
+                                                hc:TitleElement.Title="最高价"
+                                                Increment="1"
+                                                Style="{StaticResource NumericUpDownExtend}"
+                                                Value="{Binding SellPriceMax}"/>
+                                            <Button
+                                                Content="按该条件检索"
+                                                Command="{Binding FilterByPriceCommand}"/>
+                                        </hc:ElementGroup>
+
+                                    </hc:SimpleStackPanel>
 
                                     <hc:SimpleStackPanel
                                         Orientation="Horizontal">
@@ -227,11 +238,11 @@
                                             HorizontalAlignment="Center"
                                             hc:InfoElement.Title="起始时间:"
                                             SelectedDateTime="{Binding StartTime}">
-                                            <!--<hc:Interaction.Triggers>
-                                            <hc:EventTrigger EventName="SelectedDateTimeChanged">
-                                            <hc:InvokeCommandAction Command="{Binding VerifyTimeCommand}"/>
-                                            </hc:EventTrigger>
-                                            </hc:Interaction.Triggers>-->
+                                            <hc:Interaction.Triggers>
+                                                <hc:EventTrigger EventName="SelectedDateTimeChanged">
+                                                    <hc:InvokeCommandAction Command="{Binding VerifyTimeCommand}"/>
+                                                </hc:EventTrigger>
+                                            </hc:Interaction.Triggers>
                                         </hc:DateTimePicker>
                                         <hc:DateTimePicker
                                             hc:InfoElement.TitlePlacement="Top"
@@ -239,12 +250,17 @@
                                             HorizontalAlignment="Center"
                                             hc:InfoElement.Title="结束时间:"
                                             SelectedDateTime="{Binding EndTime}">
-                                            <!--<hc:Interaction.Triggers>
-                                            <hc:EventTrigger EventName="SelectedDateTimeChanged">
-                                            <hc:InvokeCommandAction Command="{Binding VerifyTimeCommand}"/>
-                                            </hc:EventTrigger>
-                                            </hc:Interaction.Triggers>-->
+                                            <hc:Interaction.Triggers>
+                                                <hc:EventTrigger EventName="SelectedDateTimeChanged">
+                                                    <hc:InvokeCommandAction Command="{Binding VerifyTimeCommand}"/>
+                                                </hc:EventTrigger>
+                                            </hc:Interaction.Triggers>
                                         </hc:DateTimePicker>
+                                        <Button
+                                            VerticalAlignment="Bottom"
+                                            Content="搜索"
+                                            Command="{Binding FilterByTimeCommand}"
+                                            Style="{StaticResource ButtonDashed}"/>
                                     </hc:SimpleStackPanel>
                                     <Button
                                         Style="{StaticResource ButtonDashed}"
@@ -257,7 +273,7 @@
                         <!--商品信息-->
                         <hc:CoverView
                             Margin="10" MaxWidth="420" ItemWidth="380" ItemHeight="90"
-                            ItemsSource="{Binding SalesCollection}">
+                            ItemsSource="{Binding SalesCollection, Mode=TwoWay}">
                             <hc:CoverView.ItemHeaderTemplate>
                                 <DataTemplate>
                                     <Border Effect="{StaticResource EffectShadow2}"
@@ -319,10 +335,10 @@
                                                     Content="发出购买请求"
                                                     Command="{Binding SendPurchaseCommand}"
                                                     Style="{StaticResource ButtonSuccess}"/>
-                                                <Button
-                                                    Content="联系卖家"
-                                                    Command="{Binding ChatToSellerCommand}"
-                                                    Style="{StaticResource ButtonInfo}"/>
+                                                <!--<Button
+                                                Content="联系卖家"
+                                                Command="{Binding ChatToSellerCommand}"
+                                                Style="{StaticResource ButtonInfo}"/>-->
 
                                             </hc:UniformSpacingPanel>
                                             <hc:SimpleStackPanel
@@ -388,7 +404,8 @@
                                 Width="150"
                                 BorderBrush="Black"
                                 Background="{StaticResource RegionBrush}"
-                                Height="50">
+                                Height="50"
+                                >
                                 <!--<hc:Gravatar
                                 Id="{Binding TargetUser}"/>-->
                                 <TextBlock
@@ -444,30 +461,33 @@
         <hc:TabItem Foreground="Coral" Header="我" Background="Transparent"
                     IsEnabled="{Binding IsAdmin, Converter={StaticResource Boolean2BooleanReConverter}}"
                     Visibility="{Binding IsAdmin, Converter={StaticResource Boolean2VisibilityReConverter}}">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="35"/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                </Grid.RowDefinitions>
-                <hc:SimpleStackPanel>
+            <hc:UniformSpacingPanel
+                Spacing="5"
+                Orientation="Vertical">
+                <TextBlock
+                    Style="{StaticResource TextBlockTitle}"
+                    Text="{Binding CurrentUserInfo.Nickname}"/>
+                <hc:SimpleStackPanel
+                    Orientation="Horizontal">
                     <TextBlock
-                        Style="{StaticResource TextBlockTitle}"
-                        Text="{Binding CurrentUserInfo.Nickname}"/>
-                    <Separator/>
+                        Style="{StaticResource TextBlockDefaultAccent}"
+                        Text="当前余额: ¥"/>
+                    <TextBlock
+                        Style="{StaticResource TextBlockDefaultAccent}"
+                        Text="{Binding CurrentMoney}"/>
                 </hc:SimpleStackPanel>
 
+                <Separator/>
                 <hc:SimpleStackPanel
-                    Orientation="Horizontal"
-                    Grid.Row="1"
-                    Margin="10">
+                    Orientation="Horizontal">
                     <TextBlock
                         Text="我的订单"
                         Margin="5"
                         Style="{StaticResource TextBlockDefaultBold}"
                         TextAlignment="Left"
                         HorizontalAlignment="Left"/>
-                    <hc:ButtonGroup>
+                    <hc:ButtonGroup
+                        Layout="Uniform">
                         <Button
                             Content="全部订单"
                             Command="{Binding SearchAllSalesCommand}"/>
@@ -478,34 +498,76 @@
 
                 </hc:SimpleStackPanel>
                 <hc:SimpleStackPanel
-                    Orientation="Horizontal"
-                    Grid.Row="2"
-                    Margin="10">
+                    Orientation="Horizontal">
                     <TextBlock
                         Text="账户操作"
                         Margin="5"
                         Style="{StaticResource TextBlockDefaultBold}"
                         TextAlignment="Left"
                         HorizontalAlignment="Left"/>
-                    <hc:ButtonGroup>
-                        <Button
-                            Content="修改账户信息"
-                            Command="{Binding ModifyUserInfoCommand}"/>
-                        <Button
-                            Content="修改密码"
-                            IsEnabled="False"
-                            Command="{Binding ModifyPwdCommand}"/>
-                    </hc:ButtonGroup>
+                    <Button
+                        Content="修改账户信息"
+                        Command="{Binding ModifyUserInfoCommand}"/>
 
                 </hc:SimpleStackPanel>
-
-
-            </Grid>
+            </hc:UniformSpacingPanel>
         </hc:TabItem>
         <hc:TabItem Foreground="Coral" Header="管理员看板" Background="Transparent"
                     IsEnabled="{Binding IsAdmin}"
                     Visibility="{Binding IsAdmin, Converter={StaticResource Boolean2VisibilityConverter}}">
+            <hc:UniformSpacingPanel
+                Spacing="5"
+                Orientation="Vertical"
+                DataContext="{Binding AdminOperateVM}">
+                <hc:SimpleStackPanel>
+                    <TextBlock
+                        Text="生成汇总统计..."
+                        Style="{StaticResource TextBlockDefaultBold}"/>
 
+                    <hc:SimpleStackPanel
+                        Orientation="Horizontal">
+                        <hc:DateTimePicker
+                            hc:InfoElement.TitlePlacement="Top"
+                            Style="{StaticResource DateTimePickerExtend}"
+                            HorizontalAlignment="Center"
+                            hc:InfoElement.Title="起始时间:"
+                            SelectedDateTime="{Binding StartTime}">
+                            <hc:Interaction.Triggers>
+                                <hc:EventTrigger EventName="SelectedDateTimeChanged">
+                                    <hc:InvokeCommandAction Command="{Binding VerifyTimeCommand}"/>
+                                </hc:EventTrigger>
+                            </hc:Interaction.Triggers>
+                        </hc:DateTimePicker>
+                        <hc:DateTimePicker
+                            hc:InfoElement.TitlePlacement="Top"
+                            Style="{StaticResource DateTimePickerExtend}"
+                            HorizontalAlignment="Center"
+                            hc:InfoElement.Title="结束时间:"
+                            SelectedDateTime="{Binding EndTime}">
+                            <hc:Interaction.Triggers>
+                                <hc:EventTrigger EventName="SelectedDateTimeChanged">
+                                    <hc:InvokeCommandAction Command="{Binding VerifyTimeCommand}"/>
+                                </hc:EventTrigger>
+                            </hc:Interaction.Triggers>
+                        </hc:DateTimePicker>
+                        <Button
+                            Style="{StaticResource ButtonPrimary}"
+                            Content="生成"
+                            Command="{Binding GenerateReportCommand}"/>
+                    </hc:SimpleStackPanel>
+                </hc:SimpleStackPanel>
+                <Separator/>
+                <hc:SimpleStackPanel
+                    Orientation="Horizontal">
+                    <TextBlock
+                        Style="{StaticResource TextBlockDefaultBold}"
+                        Text="销售记录管理"/>
+                </hc:SimpleStackPanel>
+                <Button
+                    Style="{StaticResource ButtonPrimary}"
+                    Content="管理..."
+                    Command="{Binding ManageSalesCommand}"/>
+            </hc:UniformSpacingPanel>
         </hc:TabItem>
     </hc:TabControl>
 

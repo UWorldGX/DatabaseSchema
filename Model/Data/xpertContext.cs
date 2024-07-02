@@ -35,9 +35,7 @@ public partial class xpertContext : DbContext
         {
             entity.HasKey(e => e.ChatId).HasName("PRIMARY");
 
-            entity
-                .ToTable("chat_lists")
-                .UseCollation("utf8mb4_zh_0900_as_cs");
+            entity.ToTable("chat_lists");
 
             entity.HasIndex(e => e.CustomerId, "F_chats_to_users_customers");
 
@@ -70,9 +68,7 @@ public partial class xpertContext : DbContext
         {
             entity.HasKey(e => e.ItemId).HasName("PRIMARY");
 
-            entity
-                .ToTable("items")
-                .UseCollation("utf8mb4_zh_0900_as_cs");
+            entity.ToTable("items");
 
             entity.HasIndex(e => e.SellerId, "F_items_to_user_sellers");
 
@@ -124,9 +120,7 @@ public partial class xpertContext : DbContext
         {
             entity.HasKey(e => e.MsgId).HasName("PRIMARY");
 
-            entity
-                .ToTable("messages")
-                .UseCollation("utf8mb4_zh_0900_as_cs");
+            entity.ToTable("messages");
 
             entity.HasIndex(e => e.ChatId, "F_msg_to_chat_id");
 
@@ -166,9 +160,7 @@ public partial class xpertContext : DbContext
         {
             entity.HasKey(e => e.SaleId).HasName("PRIMARY");
 
-            entity
-                .ToTable("sales")
-                .UseCollation("utf8mb4_zh_0900_as_cs");
+            entity.ToTable("sales");
 
             entity.HasIndex(e => e.ItemId, "F_sales_to_items");
 
@@ -222,9 +214,7 @@ public partial class xpertContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-            entity
-                .ToTable("user")
-                .UseCollation("utf8mb4_zh_0900_as_cs");
+            entity.ToTable("user");
 
             entity.Property(e => e.Id)
                 .HasMaxLength(32)
@@ -262,9 +252,7 @@ public partial class xpertContext : DbContext
         {
             entity.HasKey(e => e.UserId).HasName("PRIMARY");
 
-            entity
-                .ToTable("user_privkey")
-                .UseCollation("utf8mb4_zh_0900_as_cs");
+            entity.ToTable("user_privkey");
 
             entity.Property(e => e.UserId)
                 .HasMaxLength(32)
@@ -273,6 +261,11 @@ public partial class xpertContext : DbContext
                 .IsRequired()
                 .HasMaxLength(2048)
                 .HasColumnName("private_key");
+
+            entity.HasOne(d => d.User).WithOne(p => p.UserPrivkey)
+                .HasForeignKey<UserPrivkey>(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("F_privkey_userid_to_user_id");
         });
 
         OnModelCreatingPartial(modelBuilder);
