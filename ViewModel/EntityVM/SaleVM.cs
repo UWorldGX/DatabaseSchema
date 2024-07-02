@@ -73,7 +73,11 @@ public partial class SaleVM : ObservableObject
             if (MessageBox.Ask("该笔交易可能存在问题，已被管理员警告。\n仍要继续?") != System.Windows.MessageBoxResult.OK)
                 return;
         }
-        if (Item.SellPrice != RealPrice)
+        var prevSale = queryer.GetSale(SaleId, userCenter.CurrentUser);
+        prevSale.Item = null;
+        prevSale.ItemId = null;
+        
+        if (prevSale.RealPrice != RealPrice)
         {
             if (MessageBox.Ask("提出的实价与标价不相同。是否继续?") == System.Windows.MessageBoxResult.OK)
             {

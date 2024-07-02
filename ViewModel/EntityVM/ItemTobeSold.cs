@@ -71,9 +71,17 @@ public partial class ItemTobeSold(IServiceProvider provider) : ObservableObject
             if(sender is System.Windows.Window wnd)
             {
                 //对商品各项信息进行检查
-                if (Summary == null)
+                if (Summary == null || Summary.Length >= 200)
                 {
-                    throw new ArgumentNullException(Summary);
+                    throw new ArgumentNullException(nameof(Summary));
+                }
+                if(ItemName == null)
+                {
+                    throw new ArgumentNullException(nameof(ItemName));
+                }
+                if(Summary.Length >= 200 || ItemName.Length >= 200)
+                {
+                    throw new ArgumentException("商品介绍或商品名过长.");
                 }
                 if (Picture == null)
                 {
@@ -94,6 +102,11 @@ public partial class ItemTobeSold(IServiceProvider provider) : ObservableObject
         catch(ArgumentNullException ex)
         {
             MessageBox.Error($"{ex.ParamName}为空.", "错误");
+            return;
+        }
+        catch(ArgumentException ex)
+        {
+            MessageBox.Error(ex.Message);
             return;
         }
 

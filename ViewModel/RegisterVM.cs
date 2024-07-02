@@ -36,6 +36,8 @@ public partial class RegisterVM : ObservableObject
     [ObservableProperty]
     private sbyte age;
 
+    private string userId;
+
     public RegisterVM(IServiceProvider provider)
     {
         _provider = provider;
@@ -58,16 +60,31 @@ public partial class RegisterVM : ObservableObject
             //先构建UserInfo
             UserInfo newUser = new()
             {
+                Id = userId,
                 Name = this.UserName,
                 Nickname = this.NickName,
                 Age = this.Age,
                 Sex = IsMale ? "M" : "F"
             };
 
+            
+
             var registerMgr = _provider.GetRequiredService<RegisterManager>();
             UserCenter userCenter = _provider.GetRequiredService<UserCenter>();
 
+            //已存在用户，即修改用户信息
+            if(userId != null)
+            {
+                registerMgr.ModifyUser(newUser, Password2, userCenter.InnerUser);
+                MessageBox.Success("注册成功。", "提示");
 
+                //var mainWindow = _provider.GetRequiredService<MainWindow>();
+                //mainWindow.Close();
+                //var loginWindow = _provider.GetRequiredService<LoginWindow>();
+                //loginWindow.Show();
+                var registerWindow2 = _provider.GetRequiredService<RegisterWindow>();
+                registerWindow2.Close();
+            }
             registerMgr.RegisterUser(newUser, Password2, userCenter.InnerUser);
             MessageBox.Success("注册成功，请登录。", "提示");
             var registerWindow = _provider.GetRequiredService<RegisterWindow>();
@@ -95,6 +112,11 @@ public partial class RegisterVM : ObservableObject
     {
         ArgumentNullException.ThrowIfNull(userInfo);
         Utilities.Copy(userInfo, this);
+        userId = userInfo.Id;
+        NickName = userInfo.Nickname;
+        UserName = userInfo.Name;
+        IsMale = userInfo.Sex == "M";
+        IsFemale = !IsMale;
     }
 
 }

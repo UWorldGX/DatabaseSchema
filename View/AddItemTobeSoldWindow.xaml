@@ -6,7 +6,7 @@
         xmlns:hc="https://handyorg.github.io/handycontrol"
         xmlns:local="clr-namespace:FirewallDemo.View"
         mc:Ignorable="d"
-        Title="要售出什么?" Height="650" Width="400">
+        Title="要售出什么?" Height="450" Width="400">
     <Window.Background>
         <LinearGradientBrush EndPoint="1,0">
             <GradientStop Color="#fbc2eb"

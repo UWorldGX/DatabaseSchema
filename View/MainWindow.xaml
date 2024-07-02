@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:FirewallDemo.View"
         mc:Ignorable="d"
 
-        Title="MainWindow" Height="450" Width="550">
+        Title="主页" Height="450" Width="550">
     <Window.Background>
         <LinearGradientBrush EndPoint="1,0">
             <GradientStop Color="#fbc2eb"
@@ -36,30 +36,30 @@
         </hc:Interaction.Triggers>
         <hc:TabItem Header="欢迎页" Foreground="Coral" Background="Transparent">
             <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="30"/>
-                    <RowDefinition/>
-                </Grid.RowDefinitions>
+                <!--<Grid.RowDefinitions>
+                <RowDefinition Height="30"/>
+                <RowDefinition/>
+                </Grid.RowDefinitions>-->
                 <!--欢迎信息-->
                 <TextBlock
                     Style="{StaticResource TextBlockTitle}"
                     Text="{Binding CurrentUserInfo.Nickname, StringFormat='欢迎回来,{0}!'}"/>
-                <hc:SimpleStackPanel Grid.Row="1">
-                    <Separator Margin="2"/>
-                    <TextBlock Text="今日推荐"
-                               TextAlignment="Left"
-                               Style="{StaticResource TextBlockTitle}"/>
-                    <!--今日推荐商品-->
-                    <ListBox
-                        BorderThickness="0.5"
-                        Style="{StaticResource WrapPanelVerticalListBox}">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
+                <!--<hc:SimpleStackPanel Grid.Row="1">
+                <Separator Margin="2"/>
+                <TextBlock Text="今日推荐"
+                TextAlignment="Left"
+                Style="{StaticResource TextBlockTitle}"/>
+                --><!--今日推荐商品--><!--
+                <ListBox
+                BorderThickness="0.5"
+                Style="{StaticResource WrapPanelVerticalListBox}">
+                <ListBox.ItemTemplate>
+                <DataTemplate>
 
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                </hc:SimpleStackPanel>
+                </DataTemplate>
+                </ListBox.ItemTemplate>
+                </ListBox>
+                </hc:SimpleStackPanel>-->
             </Grid>
         </hc:TabItem>
         <!--商品出售页面-->

@@ -28,16 +28,6 @@ namespace FirewallDemo.Model
             };
         }
 
-        public ChatList? GetChat(string chatId, User caller)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<ChatList>? GetChats(string customerId, string sellerId, User caller)
-        {
-            throw new NotImplementedException();
-        }
-
         public Item? GetItem(string itemId, User caller)
         {
             var permission = CheckPermission(caller);
@@ -49,16 +39,6 @@ namespace FirewallDemo.Model
                          where i.ItemId == itemId
                          select i;
             return result.SingleOrDefault();
-        }
-
-        public Message? GetMessage(string msgId, User caller)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<Message>? GetMessages(ChatList chatList, User caller)
-        {
-            throw new NotImplementedException();
         }
 
         public Sale? GetSale(string saleId, User caller)
@@ -121,7 +101,7 @@ namespace FirewallDemo.Model
                 {
                     throw new InvalidOperationException("不允许使用低权限用户进行登录查询操作.");
                 }
-                var user = (from u in dataContext.Users.AsParallel()
+                var user = (from u in dataContext.Users
                             where u.Id == userId
                             select u).SingleOrDefault() ?? throw new ArgumentNullException("用户不存在");
                 return user;
